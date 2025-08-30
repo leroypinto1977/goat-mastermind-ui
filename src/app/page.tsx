@@ -1,103 +1,188 @@
-import Image from "next/image";
+"use client";
+
+import Link from 'next/link';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { ThemeToggle } from "@/components/theme-toggle";
+import { Settings } from "lucide-react";
 
 export default function Home() {
-  return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const agents = [
+    {
+      title: "Scripting Agent",
+      description: "Generate and edit scripts with AI assistance",
+      active: true,
+    },
+    {
+      title: "Video Agent",
+      description: "Create and edit video content using AI",
+      active: true,
+    },
+    {
+      title: "Background Music",
+      description: "Generate custom background music for your videos",
+      active: false,
+    },
+    {
+      title: "Image Generation",
+      description: "Create stunning visuals with AI",
+      active: false,
+    },
+    {
+      title: "Title Generation",
+      description: "Generate engaging titles for your content",
+      active: false,
+    },
+  ];
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  return (
+    <div className="min-h-screen bg-background p-8">
+      <div className="w-full max-w-7xl mx-auto">
+        {/* Header */}
+        <div className="flex justify-between items-center mb-8">
+          <div>
+            <h1 className="text-4xl font-bold">GOAT Mastermind</h1>
+            <p className="text-muted-foreground mt-2">
+              Welcome to the AI Agent Hub
+            </p>
+          </div>
+          <div className="flex items-center gap-4">
+            <Button 
+              variant="outline" 
+              onClick={() => window.location.href = '/admin'}
+              className="flex items-center gap-2"
+            >
+              <Settings className="h-4 w-4" />
+              Admin Panel
+            </Button>
+            <Button 
+              variant="outline" 
+              onClick={() => window.location.href = '/auth/signin'}
+              className="flex items-center gap-2"
+            >
+              Sign In
+            </Button>
+            <ThemeToggle />
+          </div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+
+        {/* Getting Started Card */}
+        <div className="mb-8">
+          <Card className="w-full max-w-4xl mx-auto">
+            <CardHeader>
+              <CardTitle className="text-2xl">Getting Started with GOAT Mastermind</CardTitle>
+              <CardDescription className="text-base">
+                Explore our comprehensive suite of AI agents designed to revolutionize your content creation workflow
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold text-primary">Available Now</h3>
+                  <div className="space-y-3">
+                    <div className="flex items-start gap-3">
+                      <div className="w-2 h-2 rounded-full bg-green-500 mt-2"></div>
+                      <div>
+                        <h4 className="font-medium">Scripting Agent</h4>
+                        <p className="text-sm text-muted-foreground">Generate professional scripts with AI assistance. Perfect for videos, presentations, and content creation.</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <div className="w-2 h-2 rounded-full bg-green-500 mt-2"></div>
+                      <div>
+                        <h4 className="font-medium">Video Agent</h4>
+                        <p className="text-sm text-muted-foreground">Create and edit video content seamlessly with intelligent AI-powered tools and automation.</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold text-orange-500">Coming Soon</h3>
+                  <div className="space-y-3">
+                    <div className="flex items-start gap-3">
+                      <div className="w-2 h-2 rounded-full bg-orange-400 mt-2"></div>
+                      <div>
+                        <h4 className="font-medium">Background Music Generator</h4>
+                        <p className="text-sm text-muted-foreground">Generate custom soundtracks and background music tailored to your content's mood and style.</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <div className="w-2 h-2 rounded-full bg-orange-400 mt-2"></div>
+                      <div>
+                        <h4 className="font-medium">Image Generation</h4>
+                        <p className="text-sm text-muted-foreground">Create stunning visuals, thumbnails, and graphics with state-of-the-art AI image generation.</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <div className="w-2 h-2 rounded-full bg-orange-400 mt-2"></div>
+                      <div>
+                        <h4 className="font-medium">Title Generation</h4>
+                        <p className="text-sm text-muted-foreground">Generate engaging, SEO-optimized titles and headlines that capture attention and drive engagement.</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="mt-6 p-4 bg-primary/5 rounded-lg border border-primary/20">
+                <p className="text-sm text-primary">
+                  💡 <strong>Pro Tip:</strong> Start with the Scripting Agent to create compelling narratives, then expand your workflow with additional agents as they become available.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Agents Grid */}
+        <div className="flex flex-wrap justify-center gap-4">
+          {agents.map((agent, index) => (
+            <div
+              key={index}
+              className={`relative w-56 h-40 ${
+                !agent.active ? 'opacity-60' : ''
+              }`}
+            >
+              {agent.title === "Scripting Agent" && agent.active ? (
+                <Link href="/scripting-agent" className="block h-full">
+                  <Card className="h-full w-full transition-all hover:shadow-lg hover:scale-105">
+                    <CardHeader className="p-4">
+                      <CardTitle className="text-base">{agent.title}</CardTitle>
+                      <CardDescription className="text-xs">
+                        {agent.description}
+                      </CardDescription>
+                    </CardHeader>
+                  </Card>
+                </Link>
+              ) : (
+                <Card className={`h-full w-full transition-all relative ${
+                  !agent.active ? 'blur-[1px]' : 'hover:shadow-lg hover:scale-105'
+                }`}>
+                  <CardHeader className="p-4">
+                    <CardTitle className="text-base">{agent.title}</CardTitle>
+                    <CardDescription className="text-xs">
+                      {agent.description}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="p-2">
+                  </CardContent>
+                  {!agent.active && (
+                    <div className="absolute inset-0 bg-background/80 flex items-center justify-center rounded-lg">
+                      <span className="text-sm font-medium text-muted-foreground">
+                        Coming Soon
+                      </span>
+                    </div>
+                  )}
+                </Card>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
