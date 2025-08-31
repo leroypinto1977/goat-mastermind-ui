@@ -219,11 +219,12 @@ export class AuthService {
       // Hash new password
       const hashedNewPassword = await this.hashPassword(newPassword)
 
-      // Update password
+      // Update password and set isFirstLogin to false
       await prisma.user.update({
         where: { id: userId },
         data: {
-          password: hashedNewPassword
+          password: hashedNewPassword,
+          isFirstLogin: false
         }
       })
 

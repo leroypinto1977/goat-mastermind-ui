@@ -26,6 +26,7 @@ export async function GET(
         status: true,
         lastLoginAt: true,
         createdAt: true,
+        isFirstLogin: true,
         sessions: {
           select: {
             id: true
@@ -38,21 +39,17 @@ export async function GET(
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
 
-    // Check if user is a recently created user with no login history (temp password)
-    const isFirstLogin = !user.lastLoginAt && 
-      new Date(user.createdAt).getTime() > (Date.now() - 24 * 60 * 60 * 1000)
-
     // For security, only return temp password info if user hasn't logged in
     // and only for recently created users (within last 24 hours)
     let tempPasswordMessage: string | null = null
-    if (isFirstLogin) {
+    if (user.isFirstLogin) {
       // Show a message indicating that a temporary password was provided
       tempPasswordMessage = "Temporary password was provided during user creation"
     }
 
     return NextResponse.json({
       ...user,
-      isFirstLogin,
+      isFirstLogin: user.isFirstLogin,
       tempPasswordMessage
     })
   } catch (error) {

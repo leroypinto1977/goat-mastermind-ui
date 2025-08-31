@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { signOut } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -52,6 +53,8 @@ export function PasswordResetModal({ isOpen, onClose, userEmail }: PasswordReset
 
       if (response.ok) {
         onClose(true);
+        // Sign out to refresh session and force re-login
+        signOut({ callbackUrl: "/auth/signin" });
       } else {
         const data = await response.json();
         setError(data.error || "Failed to change password");

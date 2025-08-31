@@ -21,6 +21,7 @@ export async function GET() {
         status: true,
         lastLoginAt: true,
         createdAt: true,
+        isFirstLogin: true,
       }
     })
 
@@ -28,14 +29,10 @@ export async function GET() {
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
 
-    // Check if it's a first login (no login history and recently created)
-    const isFirstLogin = !user.lastLoginAt && 
-      new Date(user.createdAt).getTime() > (Date.now() - 24 * 60 * 60 * 1000)
-
     return NextResponse.json({
       ...user,
-      isFirstLogin,
-      requiresPasswordReset: isFirstLogin
+      isFirstLogin: user.isFirstLogin,
+      requiresPasswordReset: user.isFirstLogin
     })
   } catch (error) {
     console.error('Get profile error:', error)

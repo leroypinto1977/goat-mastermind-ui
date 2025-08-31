@@ -88,9 +88,16 @@ export const authOptions = {
   ],
   callbacks: {
     async jwt({ token, user }: any) {
+      // Always fetch user from DB to get isFirstLogin
       if (user) {
         token.role = user.role;
         token.id = user.id;
+        // Fetch isFirstLogin from DB
+        const dbUser = await prisma.user.findUnique({
+          where: { id: user.id },
+          select: { isFirstLogin: true }
+        });
+        token.isFirstLogin = dbUser?.isFirstLogin ?? false;
       }
       return token;
     },
@@ -98,6 +105,8 @@ export const authOptions = {
       if (session?.user) {
         session.user.role = token.role;
         session.user.id = token.id;
+        session.user.isFirstLogin = token.isFirstLogin;
+        session.user.requiresPasswordReset = token.isFirstLogin;
       }
       return session;
     },
