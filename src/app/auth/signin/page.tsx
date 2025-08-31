@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { signIn } from "next-auth/react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -12,7 +12,6 @@ export default function SignIn() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -20,15 +19,17 @@ export default function SignIn() {
     setLoading(true);
 
     try {
-      // Simulate authentication delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // For demo purposes, any email/password combination works
-      if (email && password) {
-        alert("Login form submitted successfully! (This is a demo UI component)");
-        router.push("/");
-      } else {
-        setError("Please fill in all fields.");
+      const result = await signIn('credentials', {
+        email,
+        password,
+        redirect: false
+      });
+
+      if (result?.error) {
+        setError('Invalid email or password');
+      } else if (result?.ok) {
+        // Redirect will be handled by NextAuth
+        window.location.href = '/';
       }
     } catch (error) {
       setError("Something went wrong. Please try again.");
@@ -97,12 +98,6 @@ export default function SignIn() {
               {loading ? "Signing in..." : "Sign In"}
             </Button>
           </form>
-
-          <div className="mt-6 text-center">
-            <p className="text-sm text-muted-foreground">
-              This is a demo login page. Any email/password will work.
-            </p>
-          </div>
         </CardContent>
       </Card>
     </div>
