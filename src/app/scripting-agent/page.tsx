@@ -21,11 +21,15 @@ import {
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { useChat } from "@/hooks/useChat";
+import { MarkdownMessage } from "@/components/markdown-message";
+import { DeleteChatModal } from "@/components/delete-chat-modal";
 
 export default function ScriptingAgentPage() {
   const { data: session } = useSession();
   const [input, setInput] = useState("");
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [chatToDelete, setChatToDelete] = useState<{id: string, title: string} | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const {
@@ -71,7 +75,29 @@ export default function ScriptingAgentPage() {
 
   const handleDeleteChat = (e: React.MouseEvent, chatId: string) => {
     e.stopPropagation();
-    deleteChat(chatId);
+    
+    const chatToDeleteData = chats.find(c => c.id === chatId);
+    if (chatToDeleteData) {
+      setChatToDelete({
+        id: chatId,
+        title: chatToDeleteData.title
+      });
+      setDeleteModalOpen(true);
+    }
+  };
+
+  const handleConfirmDelete = () => {
+    if (chatToDelete) {
+      console.log('Deleting chat:', chatToDelete.id);
+      deleteChat(chatToDelete.id);
+      setDeleteModalOpen(false);
+      setChatToDelete(null);
+    }
+  };
+
+  const handleCancelDelete = () => {
+    setDeleteModalOpen(false);
+    setChatToDelete(null);
   };
 
   return (
@@ -279,16 +305,10 @@ export default function ScriptingAgentPage() {
                     message.role === "user" ? "justify-end" : "justify-start"
                   )}
                 >
-                  <div
-                    className={cn(
-                      "max-w-[80%] rounded-2xl px-4 py-3 text-sm whitespace-pre-wrap",
-                      message.role === "user"
-                        ? "bg-primary text-primary-foreground rounded-br-none"
-                        : "bg-muted text-foreground rounded-bl-none"
-                    )}
-                  >
-                    {message.content}
-                  </div>
+                  <MarkdownMessage
+                    content={message.content}
+                    isUser={message.role === "user"}
+                  />
                 </div>
               ))}
               {currentChat.isLoading && (
@@ -347,6 +367,14 @@ export default function ScriptingAgentPage() {
           </div>
         </div>
       </div>
+
+      {/* Delete Chat Modal */}
+      <DeleteChatModal
+        isOpen={deleteModalOpen}
+        chatTitle={chatToDelete?.title || ''}
+        onConfirm={handleConfirmDelete}
+        onCancel={handleCancelDelete}
+      />
     </div>
   );
 }

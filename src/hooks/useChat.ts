@@ -36,6 +36,17 @@ const generateChatTitle = (firstMessage: string): string => {
   return firstMessage.substring(0, 47) + '...';
 };
 
+const sortChatsByMostRecent = (chats: Chat[]): Chat[] => {
+  return [...chats].sort((a, b) => {
+    const aTime = a.updatedAt.getTime();
+    const bTime = b.updatedAt.getTime();
+    if (aTime !== bTime) {
+      return bTime - aTime; // Most recent first
+    }
+    return b.createdAt.getTime() - a.createdAt.getTime(); // If same updated time, use created time
+  });
+};
+
 export function useChat(): UseChatReturn {
   const { data: session } = useSession();
   const [chats, setChats] = useState<Chat[]>([]);
@@ -66,17 +77,20 @@ export function useChat(): UseChatReturn {
     try {
       const response = await ChatAPI.fetchChats(userId);
       
-      const loadedChats: Chat[] = response.chats.map((chat: any) => ({
-        id: chat.chat_id,
-        title: chat.chat_history.length > 0 
-          ? generateChatTitle(chat.chat_history[0].content)
-          : 'Empty Chat',
-        messages: chat.chat_history,
-        createdAt: new Date(chat.created_at),
-        updatedAt: new Date(chat.updated_at),
-      }));
+      const loadedChats: Chat[] = response.chats
+        .filter((chat: any) => chat.chat_history && chat.chat_history.length > 0) // Filter out empty/deleted chats
+        .map((chat: any) => ({
+          id: chat.chat_id,
+          title: chat.chat_history.length > 0 
+            ? generateChatTitle(chat.chat_history[0].content)
+            : 'Empty Chat',
+          messages: chat.chat_history,
+          createdAt: new Date(chat.created_at),
+          updatedAt: new Date(chat.updated_at),
+        }));
 
-      setChats(loadedChats);
+      // Sort chats by most recent first
+      setChats(sortChatsByMostRecent(loadedChats));
     } catch (error) {
       console.error('Failed to load chats:', error);
       setError(error instanceof Error ? error.message : 'Failed to load chats');
@@ -110,7 +124,15 @@ export function useChat(): UseChatReturn {
 
   const selectChat = useCallback((chatId: string) => {
     setCurrentChatId(chatId);
-  }, []);
+    
+    // If selecting a chat that exists in backend (has a proper UUID format),
+    // we might want to refresh it to ensure we have the latest data
+    const selectedChat = chats.find(c => c.id === chatId);
+    if (selectedChat && chatId.includes('-') && chatId.length > 20) {
+      // This looks like a backend UUID, consider refreshing
+      // For now, we'll trust our local state unless there are sync issues
+    }
+  }, [chats]);
 
   const sendMessage = useCallback(async (message: string) => {
     if (!userId) {
@@ -165,32 +187,76 @@ export function useChat(): UseChatReturn {
       
       const finalMessages = [...updatedMessages, assistantMessage];
 
-      // Update chat with assistant response
-      setChats((prevChats) =>
-        prevChats.map((c) =>
-          c.id === chatId
-            ? {
-                ...c,
-                messages: finalMessages,
-                updatedAt: new Date(),
-                isLoading: false,
-              }
-            : c
-        )
-      );
+      // Determine if this is a new chat (no previous messages)
+      const isNewChat = chat.messages.length === 0;
+      let backendChatId = chatId;
 
-      // Store/update chat in backend
+      // Store/update chat in backend first
       try {
-        if (chat.messages.length === 0) {
-          // New chat - store it
-          await ChatAPI.storeChat(userId, finalMessages);
+        if (isNewChat) {
+          // New chat - store it and get the backend chat ID
+          const storeResponse = await ChatAPI.storeChat(userId, finalMessages);
+          backendChatId = storeResponse.chat_id;
+          
+          // Update our local chat with the backend ID and resort
+          setChats((prevChats) => {
+            const updatedChats = prevChats.map((c) =>
+              c.id === chatId
+                ? {
+                    ...c,
+                    id: backendChatId,
+                    messages: finalMessages,
+                    updatedAt: new Date(),
+                    isLoading: false,
+                  }
+                : c
+            );
+            return sortChatsByMostRecent(updatedChats);
+          });
+          
+          // Update current chat ID to the backend ID
+          setCurrentChatId(backendChatId);
+          
         } else {
-          // Existing chat - update it
+          // Existing chat - update it using the existing chat ID
           await ChatAPI.updateChat(userId, chatId, finalMessages);
+          
+          // Update local state and resort
+          setChats((prevChats) => {
+            const updatedChats = prevChats.map((c) =>
+              c.id === chatId
+                ? {
+                    ...c,
+                    messages: finalMessages,
+                    updatedAt: new Date(),
+                    isLoading: false,
+                  }
+                : c
+            );
+            return sortChatsByMostRecent(updatedChats);
+          });
         }
+
       } catch (apiError) {
         console.error('Failed to sync chat with backend:', apiError);
-        // Continue anyway - we have local state
+        
+        // Still update local state even if backend fails and resort
+        setChats((prevChats) => {
+          const updatedChats = prevChats.map((c) =>
+            c.id === chatId
+              ? {
+                  ...c,
+                  messages: finalMessages,
+                  updatedAt: new Date(),
+                  isLoading: false,
+                }
+              : c
+          );
+          return sortChatsByMostRecent(updatedChats);
+        });
+        
+        // Show warning but don't fail completely
+        console.warn('Chat saved locally but not synced with server');
       }
 
     } catch (error) {
@@ -211,12 +277,30 @@ export function useChat(): UseChatReturn {
     }
   }, [userId, currentChatId, chats, createNewChat]);
 
-  const deleteChat = useCallback((chatId: string) => {
+  const deleteChat = useCallback(async (chatId: string) => {
+    if (!userId) {
+      console.error('Cannot delete chat: user not authenticated');
+      return;
+    }
+
+    // Remove from local state immediately for better UX
     setChats((prev) => prev.filter((chat) => chat.id !== chatId));
     if (currentChatId === chatId) {
       setCurrentChatId(null);
     }
-  }, [currentChatId]);
+
+    // Since there's no delete endpoint, we'll try to "clear" the chat
+    // by updating it with empty content as a workaround
+    try {
+      // Update the chat with empty history to effectively "delete" it
+      await ChatAPI.updateChat(userId, chatId, []);
+      console.log('Chat cleared on backend:', chatId);
+    } catch (error) {
+      console.error('Failed to clear chat from backend:', error);
+      // Don't restore the chat to local state since deletion UX is more important
+      // The user expects the chat to be gone immediately
+    }
+  }, [userId, currentChatId]);
 
   const updateChatTitle = useCallback((chatId: string, title: string) => {
     setChats((prev) =>
