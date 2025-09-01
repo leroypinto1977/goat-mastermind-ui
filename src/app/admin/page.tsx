@@ -247,6 +247,10 @@ export default function AdminDashboard() {
   const handleConfirmCreateUser = async () => {
     setCreateUserLoading(true);
     setShowConfirmModal(false);
+    
+    // Create a local copy of the new user data before resetting
+    const newUserData = { ...newUser };
+    
     try {
       const response = await fetch("/api/admin/users", {
         method: "POST",
@@ -254,29 +258,40 @@ export default function AdminDashboard() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          name: newUser.name,
-          email: newUser.email,
-          role: newUser.role,
+          name: newUserData.name,
+          email: newUserData.email,
+          role: newUserData.role,
         }),
       });
-      if (response.ok) {
-        const userData = await response.json();
-        setCreatedUserInfo({
-          email: userData.email,
-          tempPassword: userData.tempPassword,
-        });
-        setShowSuccessModal(true);
-        setNewUser({ name: "", email: "", role: "USER" });
-        setShowCreateUser(false);
-        // Don't await loadUsers here, so modal shows instantly
-        loadUsers();
-      } else {
+      
+      if (!response.ok) {
         const error = await response.json();
-        alert(`Error: ${error.error || "Failed to create user"}`);
+        throw new Error(error.error || "Failed to create user");
       }
+      
+      const userData = await response.json();
+      
+      // Reset the form after successful creation
+      setNewUser({ name: "", email: "", role: "USER" });
+      setShowCreateUser(false);
+      
+      // Set the created user info and show success modal
+      setCreatedUserInfo({
+        email: userData.email,
+        tempPassword: userData.tempPassword,
+      });
+      
+      // Show success modal after a small delay to ensure state updates are processed
+      setTimeout(() => {
+        setShowSuccessModal(true);
+      }, 100);
+      
+      // Refresh the users list in the background
+      loadUsers().catch(console.error);
+      
     } catch (error) {
       console.error("Error creating user:", error);
-      alert("Failed to create user");
+      alert(error instanceof Error ? error.message : "Failed to create user");
     } finally {
       setCreateUserLoading(false);
     }
@@ -1057,50 +1072,6 @@ export default function AdminDashboard() {
                     </div>
                   )}
 
-                  {/* Success Modal */}
-                  {showSuccessModal && createdUserInfo && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-                      <div className="bg-white dark:bg-zinc-900 rounded-lg shadow-lg p-6 w-full max-w-md flex flex-col items-center">
-                        {/* Success Animation GIF */}
-                        <Image
-                          src="/public/success.gif"
-                          alt="Success"
-                          width={120}
-                          height={120}
-                          className="mb-4"
-                        />
-                        <h2 className="text-lg font-semibold mb-2 text-green-600 flex items-center gap-2">
-                          <CheckCircle className="h-6 w-6 text-green-500" />{" "}
-                          User Created Successfully!
-                        </h2>
-                        <div className="mb-2 text-center">
-                          <div className="text-sm text-muted-foreground">
-                            Email Address
-                          </div>
-                          <div className="font-mono font-medium text-base">
-                            {createdUserInfo.email}
-                          </div>
-                        </div>
-                        <div className="mb-4 text-center">
-                          <div className="text-sm text-muted-foreground">
-                            Temporary Password
-                          </div>
-                          <div className="font-mono font-medium text-base">
-                            {createdUserInfo.tempPassword}
-                          </div>
-                          <div className="text-xs text-muted-foreground mt-1">
-                            Share this with the user for their first login
-                          </div>
-                        </div>
-                        <Button
-                          onClick={() => setShowSuccessModal(false)}
-                          className="mt-2 w-full"
-                        >
-                          Close
-                        </Button>
-                      </div>
-                    </div>
-                  )}
                   <div>
                     <label htmlFor="name" className="text-sm font-medium">
                       Full Name
@@ -1172,6 +1143,51 @@ export default function AdminDashboard() {
                 </form>
               </CardContent>
             </Card>
+          </div>
+        )}
+
+        {/* Success Modal - Moved outside the create user form */}
+        {showSuccessModal && createdUserInfo && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+            <div className="bg-white dark:bg-zinc-900 rounded-lg shadow-lg p-6 w-full max-w-md flex flex-col items-center">
+              {/* Success Animation GIF */}
+              <Image
+                src="/public/success.gif"
+                alt="Success"
+                width={120}
+                height={120}
+                className="mb-4"
+              />
+              <h2 className="text-lg font-semibold mb-2 text-green-600 flex items-center gap-2">
+                <CheckCircle className="h-6 w-6 text-green-500" />{" "}
+                User Created Successfully!
+              </h2>
+              <div className="mb-2 text-center">
+                <div className="text-sm text-muted-foreground">
+                  Email Address
+                </div>
+                <div className="font-mono font-medium text-base">
+                  {createdUserInfo.email}
+                </div>
+              </div>
+              <div className="mb-4 text-center">
+                <div className="text-sm text-muted-foreground">
+                  Temporary Password
+                </div>
+                <div className="font-mono font-medium text-base">
+                  {createdUserInfo.tempPassword}
+                </div>
+                <div className="text-xs text-muted-foreground mt-1">
+                  Share this with the user for their first login
+                </div>
+              </div>
+              <Button
+                onClick={() => setShowSuccessModal(false)}
+                className="mt-2 w-full"
+              >
+                Close
+              </Button>
+            </div>
           </div>
         )}
       </div>
