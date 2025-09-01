@@ -1,9 +1,6 @@
-import React, { useEffect } from 'react';
+import React, { useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import {
-  AlertCircle,
-  X,
-} from "lucide-react";
+import { AlertCircle, X } from "lucide-react";
 
 interface DeleteChatModalProps {
   isOpen: boolean;
@@ -12,19 +9,24 @@ interface DeleteChatModalProps {
   onCancel: () => void;
 }
 
-export function DeleteChatModal({ isOpen, chatTitle, onConfirm, onCancel }: DeleteChatModalProps) {
+export function DeleteChatModal({
+  isOpen,
+  chatTitle,
+  onConfirm,
+  onCancel,
+}: DeleteChatModalProps) {
   // Handle ESC key press
   useEffect(() => {
     if (!isOpen) return;
 
     const handleEscKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
+      if (e.key === "Escape") {
         onCancel();
       }
     };
 
-    document.addEventListener('keydown', handleEscKey);
-    return () => document.removeEventListener('keydown', handleEscKey);
+    document.addEventListener("keydown", handleEscKey);
+    return () => document.removeEventListener("keydown", handleEscKey);
   }, [isOpen, onCancel]);
   if (!isOpen) return null;
 
@@ -35,7 +37,7 @@ export function DeleteChatModal({ isOpen, chatTitle, onConfirm, onCancel }: Dele
   };
 
   return (
-    <div 
+    <div
       className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
       onClick={handleBackdropClick}
     >
@@ -47,8 +49,12 @@ export function DeleteChatModal({ isOpen, chatTitle, onConfirm, onCancel }: Dele
               <AlertCircle className="h-5 w-5 text-destructive" />
             </div>
             <div>
-              <h2 className="text-lg font-semibold text-foreground">Delete Chat</h2>
-              <p className="text-sm text-muted-foreground">This action cannot be undone</p>
+              <h2 className="text-lg font-semibold text-foreground">
+                Delete Chat
+              </h2>
+              <p className="text-sm text-muted-foreground">
+                This action cannot be undone
+              </p>
             </div>
           </div>
           <Button
@@ -64,8 +70,8 @@ export function DeleteChatModal({ isOpen, chatTitle, onConfirm, onCancel }: Dele
         {/* Content */}
         <div className="px-6 pb-4">
           <p className="text-sm text-foreground leading-relaxed">
-            Are you sure you want to delete{' '}
-            <span className="font-medium text-foreground">"{chatTitle}"</span>?{' '}
+            Are you sure you want to delete{" "}
+            <span className="font-medium text-foreground">"{chatTitle}"</span>?{" "}
             All messages in this conversation will be permanently removed.
           </p>
         </div>

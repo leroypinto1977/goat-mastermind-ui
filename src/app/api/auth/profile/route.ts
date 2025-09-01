@@ -1,13 +1,13 @@
-import { NextResponse } from 'next/server'
-import { auth } from '@/lib/auth'
-import { prisma } from '@/lib/prisma'
+import { NextResponse } from "next/server";
+import { auth } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
 
 export async function GET() {
   try {
-    const session = await auth()
-    
+    const session = await auth();
+
     if (!session?.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     // Get user details to check if password reset is required
@@ -22,20 +22,23 @@ export async function GET() {
         lastLoginAt: true,
         createdAt: true,
         isFirstLogin: true,
-      }
-    })
+      },
+    });
 
     if (!user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 })
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
     return NextResponse.json({
       ...user,
       isFirstLogin: user.isFirstLogin,
-      requiresPasswordReset: user.isFirstLogin
-    })
+      requiresPasswordReset: user.isFirstLogin,
+    });
   } catch (error) {
-    console.error('Get profile error:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    console.error("Get profile error:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
   }
 }

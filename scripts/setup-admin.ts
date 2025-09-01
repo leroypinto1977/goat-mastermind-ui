@@ -7,7 +7,8 @@ async function main() {
   try {
     console.log("Setting up initial admin user...");
 
-    const adminEmail = process.env.INITIAL_ADMIN_EMAIL || "admin@goatscripting.com";
+    const adminEmail =
+      process.env.INITIAL_ADMIN_EMAIL || "admin@goatscripting.com";
     const adminPassword = process.env.INITIAL_ADMIN_PASSWORD || "admin123!";
 
     // Check if admin already exists
@@ -52,7 +53,6 @@ async function main() {
     } catch (auditError) {
       console.log("Note: Audit logging not available yet");
     }
-
   } catch (error) {
     console.error("Error setting up admin user:", error);
     process.exit(1);

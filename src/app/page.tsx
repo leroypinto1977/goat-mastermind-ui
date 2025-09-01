@@ -316,7 +316,7 @@ export default function Home() {
         )}
 
         {/* Password Reset Modal */}
-        <PasswordResetModal 
+        <PasswordResetModal
           isOpen={showPasswordReset}
           onClose={handlePasswordResetClose}
           userEmail={session?.user?.email}

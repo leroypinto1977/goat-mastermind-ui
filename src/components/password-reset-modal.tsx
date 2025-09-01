@@ -4,7 +4,13 @@ import { useState } from "react";
 import { signOut } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Shield, Eye, EyeOff } from "lucide-react";
 
 interface PasswordResetModalProps {
@@ -13,7 +19,11 @@ interface PasswordResetModalProps {
   userEmail?: string;
 }
 
-export function PasswordResetModal({ isOpen, onClose, userEmail }: PasswordResetModalProps) {
+export function PasswordResetModal({
+  isOpen,
+  onClose,
+  userEmail,
+}: PasswordResetModalProps) {
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -25,10 +35,8 @@ export function PasswordResetModal({ isOpen, onClose, userEmail }: PasswordReset
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
-
     if (newPassword !== confirmPassword) {
-      setError("New passwords do not match");
+      setError("Passwords do not match");
       return;
     }
 
@@ -38,6 +46,7 @@ export function PasswordResetModal({ isOpen, onClose, userEmail }: PasswordReset
     }
 
     setLoading(true);
+    setError("");
 
     try {
       const response = await fetch("/api/auth/change-password", {
@@ -46,22 +55,26 @@ export function PasswordResetModal({ isOpen, onClose, userEmail }: PasswordReset
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          currentPassword,
-          newPassword,
+          currentPassword: currentPassword,
+          newPassword: newPassword,
         }),
       });
 
-      if (response.ok) {
-        onClose(true);
-        // Sign out to refresh session and force re-login
-        signOut({ callbackUrl: "/auth/signin" });
-      } else {
-        const data = await response.json();
+      const data = await response.json();
+
+      if (!response.ok) {
         setError(data.error || "Failed to change password");
+        return;
       }
+
+      // Force immediate logout to clear the session state
+      await signOut({
+        callbackUrl:
+          "/auth/signin?message=Password changed successfully. Please sign in with your new password.",
+        redirect: true,
+      });
     } catch (error) {
-      console.error("Password change error:", error);
-      setError("Failed to change password");
+      setError("An error occurred. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -80,7 +93,9 @@ export function PasswordResetModal({ isOpen, onClose, userEmail }: PasswordReset
           <CardDescription>
             You must change your temporary password before continuing.
             {userEmail && (
-              <span className="block mt-1 font-medium">Account: {userEmail}</span>
+              <span className="block mt-1 font-medium">
+                Account: {userEmail}
+              </span>
             )}
           </CardDescription>
         </CardHeader>
@@ -186,11 +201,7 @@ export function PasswordResetModal({ isOpen, onClose, userEmail }: PasswordReset
             </div>
 
             <div className="flex gap-2 pt-4">
-              <Button 
-                type="submit" 
-                disabled={loading}
-                className="flex-1"
-              >
+              <Button type="submit" disabled={loading} className="flex-1">
                 {loading ? "Changing..." : "Change Password"}
               </Button>
             </div>

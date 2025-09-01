@@ -29,7 +29,10 @@ export default function ScriptingAgentPage() {
   const [input, setInput] = useState("");
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-  const [chatToDelete, setChatToDelete] = useState<{id: string, title: string} | null>(null);
+  const [chatToDelete, setChatToDelete] = useState<{
+    id: string;
+    title: string;
+  } | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const {
@@ -75,12 +78,12 @@ export default function ScriptingAgentPage() {
 
   const handleDeleteChat = (e: React.MouseEvent, chatId: string) => {
     e.stopPropagation();
-    
-    const chatToDeleteData = chats.find(c => c.id === chatId);
+
+    const chatToDeleteData = chats.find((c) => c.id === chatId);
     if (chatToDeleteData) {
       setChatToDelete({
         id: chatId,
-        title: chatToDeleteData.title
+        title: chatToDeleteData.title,
       });
       setDeleteModalOpen(true);
     }
@@ -88,7 +91,7 @@ export default function ScriptingAgentPage() {
 
   const handleConfirmDelete = () => {
     if (chatToDelete) {
-      console.log('Deleting chat:', chatToDelete.id);
+      console.log("Deleting chat:", chatToDelete.id);
       deleteChat(chatToDelete.id);
       setDeleteModalOpen(false);
       setChatToDelete(null);
@@ -142,7 +145,7 @@ export default function ScriptingAgentPage() {
 
           {/* New Chat Button */}
           <div className="p-4 border-b border-border">
-            <Button 
+            <Button
               onClick={handleNewChat}
               className="w-full justify-start gap-2 bg-primary hover:bg-primary/90 text-primary-foreground"
               disabled={!session}
@@ -181,8 +184,8 @@ export default function ScriptingAgentPage() {
                   key={chat.id}
                   className={cn(
                     "group relative w-full text-left p-3 rounded-lg hover:bg-muted flex items-center gap-2 text-sm cursor-pointer transition-colors",
-                    currentChat?.id === chat.id 
-                      ? "bg-muted text-foreground" 
+                    currentChat?.id === chat.id
+                      ? "bg-muted text-foreground"
                       : "text-muted-foreground"
                   )}
                   onClick={() => handleSelectChat(chat.id)}
@@ -211,11 +214,11 @@ export default function ScriptingAgentPage() {
           <div className="p-4 border-t border-border">
             <div className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted cursor-pointer">
               <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center text-sm font-medium text-muted-foreground">
-                {session?.user?.name?.[0] || session?.user?.email?.[0] || 'U'}
+                {session?.user?.name?.[0] || session?.user?.email?.[0] || "U"}
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium truncate text-foreground">
-                  {session?.user?.name || session?.user?.email || 'User'}
+                  {session?.user?.name || session?.user?.email || "User"}
                 </p>
                 <p className="text-xs text-muted-foreground truncate">
                   Free Plan
@@ -281,7 +284,7 @@ export default function ScriptingAgentPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-3xl">
                 {[
                   "Write a Python script to automate file organization",
-                  "Create a bash script for system monitoring", 
+                  "Create a bash script for system monitoring",
                   "Help me debug a JavaScript function",
                   "Generate a PowerShell script for user management",
                 ].map((suggestion, i) => (
@@ -338,10 +341,10 @@ export default function ScriptingAgentPage() {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 placeholder={
-                  !session 
+                  !session
                     ? "Please sign in to start chatting..."
-                    : !apiConnected 
-                    ? "API not connected..." 
+                    : !apiConnected
+                    ? "API not connected..."
                     : "Message Scripting Agent..."
                 }
                 className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0 shadow-none bg-transparent text-foreground"
@@ -350,7 +353,9 @@ export default function ScriptingAgentPage() {
               <Button
                 type="submit"
                 size="icon"
-                disabled={isLoading || !input.trim() || !session || !apiConnected}
+                disabled={
+                  isLoading || !input.trim() || !session || !apiConnected
+                }
                 className="h-9 w-9 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground flex-shrink-0"
               >
                 {isLoading ? (
@@ -371,7 +376,7 @@ export default function ScriptingAgentPage() {
       {/* Delete Chat Modal */}
       <DeleteChatModal
         isOpen={deleteModalOpen}
-        chatTitle={chatToDelete?.title || ''}
+        chatTitle={chatToDelete?.title || ""}
         onConfirm={handleConfirmDelete}
         onCancel={handleCancelDelete}
       />

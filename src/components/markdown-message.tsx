@@ -1,7 +1,7 @@
-import React from 'react';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
-import { cn } from '@/lib/utils';
+import React from "react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import { cn } from "@/lib/utils";
 
 interface MarkdownMessageProps {
   content: string;
@@ -9,7 +9,11 @@ interface MarkdownMessageProps {
   className?: string;
 }
 
-export function MarkdownMessage({ content, isUser, className }: MarkdownMessageProps) {
+export function MarkdownMessage({
+  content,
+  isUser,
+  className,
+}: MarkdownMessageProps) {
   return (
     <div
       className={cn(
@@ -26,9 +30,7 @@ export function MarkdownMessage({ content, isUser, className }: MarkdownMessageP
       ) : (
         // Assistant messages with markdown rendering
         <div className="markdown-content">
-          <ReactMarkdown remarkPlugins={[remarkGfm]}>
-            {content}
-          </ReactMarkdown>
+          <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>
         </div>
       )}
     </div>

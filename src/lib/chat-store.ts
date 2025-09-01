@@ -1,6 +1,6 @@
-import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
-import { ChatMessage, ChatAPI } from './chat-api';
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
+import { ChatMessage, ChatAPI } from "./chat-api";
 
 export interface Chat {
   id: string;
@@ -30,17 +30,18 @@ interface ChatStore {
   updateChatTitle: (chatId: string, title: string) => void;
   checkApiConnection: () => Promise<void>;
   clearError: () => void;
-  
+
   // Getters
   getCurrentChat: () => Chat | null;
   getChatById: (chatId: string) => Chat | null;
 }
 
-const generateChatId = () => `chat-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+const generateChatId = () =>
+  `chat-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
 const generateChatTitle = (firstMessage: string): string => {
   if (firstMessage.length <= 50) return firstMessage;
-  return firstMessage.substring(0, 47) + '...';
+  return firstMessage.substring(0, 47) + "...";
 };
 
 export const useChatStore = create<ChatStore>()(
@@ -66,7 +67,7 @@ export const useChatStore = create<ChatStore>()(
         const chatId = generateChatId();
         const newChat: Chat = {
           id: chatId,
-          title: 'New Chat',
+          title: "New Chat",
           messages: [],
           createdAt: new Date(),
           updatedAt: new Date(),
@@ -86,14 +87,14 @@ export const useChatStore = create<ChatStore>()(
 
       sendMessage: async (message: string) => {
         const { userId, currentChatId, chats } = get();
-        
+
         if (!userId) {
-          set({ error: 'User not authenticated' });
+          set({ error: "User not authenticated" });
           return;
         }
 
         let chatId = currentChatId;
-        
+
         // Create new chat if none selected
         if (!chatId) {
           chatId = get().createNewChat();
@@ -101,12 +102,12 @@ export const useChatStore = create<ChatStore>()(
 
         const chat = get().getChatById(chatId);
         if (!chat) {
-          set({ error: 'Chat not found' });
+          set({ error: "Chat not found" });
           return;
         }
 
         // Add user message
-        const userMessage: ChatMessage = { role: 'user', content: message };
+        const userMessage: ChatMessage = { role: "user", content: message };
         const updatedMessages = [...chat.messages, userMessage];
 
         // Update chat with user message and set loading
@@ -116,7 +117,10 @@ export const useChatStore = create<ChatStore>()(
               ? {
                   ...c,
                   messages: updatedMessages,
-                  title: c.messages.length === 0 ? generateChatTitle(message) : c.title,
+                  title:
+                    c.messages.length === 0
+                      ? generateChatTitle(message)
+                      : c.title,
                   updatedAt: new Date(),
                   isLoading: true,
                 }
@@ -129,13 +133,13 @@ export const useChatStore = create<ChatStore>()(
         try {
           // Send to API
           const response = await ChatAPI.sendMessage(message, chat.messages);
-          
+
           // Add assistant response
-          const assistantMessage: ChatMessage = { 
-            role: 'assistant', 
-            content: response.response 
+          const assistantMessage: ChatMessage = {
+            role: "assistant",
+            content: response.response,
           };
-          
+
           const finalMessages = [...updatedMessages, assistantMessage];
 
           // Update chat with assistant response
@@ -163,22 +167,20 @@ export const useChatStore = create<ChatStore>()(
               await ChatAPI.updateChat(userId, chatId, finalMessages);
             }
           } catch (apiError) {
-            console.error('Failed to sync chat with backend:', apiError);
+            console.error("Failed to sync chat with backend:", apiError);
             // Continue anyway - we have local state
           }
-
         } catch (error) {
-          console.error('Failed to send message:', error);
-          
+          console.error("Failed to send message:", error);
+
           // Remove loading state and add error
           set((state) => ({
             chats: state.chats.map((c) =>
-              c.id === chatId
-                ? { ...c, isLoading: false }
-                : c
+              c.id === chatId ? { ...c, isLoading: false } : c
             ),
             isLoading: false,
-            error: error instanceof Error ? error.message : 'Failed to send message',
+            error:
+              error instanceof Error ? error.message : "Failed to send message",
           }));
         }
       },
@@ -191,12 +193,13 @@ export const useChatStore = create<ChatStore>()(
 
         try {
           const response = await ChatAPI.fetchChats(userId);
-          
+
           const loadedChats: Chat[] = response.chats.map((chat) => ({
             id: chat.chat_id,
-            title: chat.chat_history.length > 0 
-              ? generateChatTitle(chat.chat_history[0].content)
-              : 'Empty Chat',
+            title:
+              chat.chat_history.length > 0
+                ? generateChatTitle(chat.chat_history[0].content)
+                : "Empty Chat",
             messages: chat.chat_history,
             createdAt: new Date(chat.created_at),
             updatedAt: new Date(chat.updated_at),
@@ -204,10 +207,11 @@ export const useChatStore = create<ChatStore>()(
 
           set({ chats: loadedChats, isLoading: false });
         } catch (error) {
-          console.error('Failed to load chats:', error);
-          set({ 
-            error: error instanceof Error ? error.message : 'Failed to load chats',
-            isLoading: false 
+          console.error("Failed to load chats:", error);
+          set({
+            error:
+              error instanceof Error ? error.message : "Failed to load chats",
+            isLoading: false,
           });
         }
       },
@@ -215,14 +219,17 @@ export const useChatStore = create<ChatStore>()(
       deleteChat: (chatId: string) => {
         set((state) => ({
           chats: state.chats.filter((chat) => chat.id !== chatId),
-          currentChatId: state.currentChatId === chatId ? null : state.currentChatId,
+          currentChatId:
+            state.currentChatId === chatId ? null : state.currentChatId,
         }));
       },
 
       updateChatTitle: (chatId: string, title: string) => {
         set((state) => ({
           chats: state.chats.map((chat) =>
-            chat.id === chatId ? { ...chat, title, updatedAt: new Date() } : chat
+            chat.id === chatId
+              ? { ...chat, title, updatedAt: new Date() }
+              : chat
           ),
         }));
       },
@@ -252,7 +259,7 @@ export const useChatStore = create<ChatStore>()(
       },
     }),
     {
-      name: 'chat-store',
+      name: "chat-store",
       partialize: (state) => ({
         chats: state.chats,
         currentChatId: state.currentChatId,

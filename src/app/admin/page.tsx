@@ -247,10 +247,10 @@ export default function AdminDashboard() {
   const handleConfirmCreateUser = async () => {
     setCreateUserLoading(true);
     setShowConfirmModal(false);
-    
+
     // Create a local copy of the new user data before resetting
     const newUserData = { ...newUser };
-    
+
     try {
       const response = await fetch("/api/admin/users", {
         method: "POST",
@@ -263,32 +263,31 @@ export default function AdminDashboard() {
           role: newUserData.role,
         }),
       });
-      
+
       if (!response.ok) {
         const error = await response.json();
         throw new Error(error.error || "Failed to create user");
       }
-      
+
       const userData = await response.json();
-      
+
       // Reset the form after successful creation
       setNewUser({ name: "", email: "", role: "USER" });
       setShowCreateUser(false);
-      
+
       // Set the created user info and show success modal
       setCreatedUserInfo({
         email: userData.email,
         tempPassword: userData.tempPassword,
       });
-      
+
       // Show success modal after a small delay to ensure state updates are processed
       setTimeout(() => {
         setShowSuccessModal(true);
       }, 100);
-      
+
       // Refresh the users list in the background
       loadUsers().catch(console.error);
-      
     } catch (error) {
       console.error("Error creating user:", error);
       alert(error instanceof Error ? error.message : "Failed to create user");
@@ -705,27 +704,26 @@ export default function AdminDashboard() {
                                   <div className="bg-white dark:bg-zinc-900 rounded-lg shadow-lg p-6 w-full max-w-md">
                                     {actionLoading ? (
                                       <div className="flex flex-col items-center justify-center py-8">
-                                        <Image
-                                          src="/public/loading.gif"
-                                          alt="Loading"
-                                          width={60}
-                                          height={60}
-                                          className="mb-4"
-                                        />
-                                        <p className="text-lg font-semibold">Processing...</p>
+                                        <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mb-4"></div>
+                                        <p className="text-lg font-semibold">
+                                          Processing...
+                                        </p>
                                       </div>
                                     ) : (
                                       <>
                                         <div className="flex items-center justify-between mb-2">
                                           <h2 className="text-lg font-semibold">
                                             {confirmAction.type === "suspend"
-                                              ? confirmAction.user.status === "ACTIVE"
+                                              ? confirmAction.user.status ===
+                                                "ACTIVE"
                                                 ? "Suspend User"
                                                 : "Activate User"
                                               : "Delete User"}
                                           </h2>
                                           <button
-                                            onClick={() => setConfirmAction(null)}
+                                            onClick={() =>
+                                              setConfirmAction(null)
+                                            }
                                             className="text-gray-400 hover:text-gray-600"
                                           >
                                             <X className="h-5 w-5" />
@@ -734,14 +732,17 @@ export default function AdminDashboard() {
                                         <p className="mb-4">
                                           {confirmAction.type === "suspend"
                                             ? `Are you sure you want to ${
-                                                confirmAction.user.status === "ACTIVE"
+                                                confirmAction.user.status ===
+                                                "ACTIVE"
                                                   ? "suspend"
                                                   : "activate"
                                               } the user "${
-                                                confirmAction.user.name || confirmAction.user.email
+                                                confirmAction.user.name ||
+                                                confirmAction.user.email
                                               }"?`
                                             : `Are you sure you want to permanently delete the user "${
-                                                confirmAction.user.name || confirmAction.user.email
+                                                confirmAction.user.name ||
+                                                confirmAction.user.email
                                               }"? This action cannot be undone.`}
                                         </p>
                                         <div className="flex gap-2 justify-end">
@@ -753,7 +754,9 @@ export default function AdminDashboard() {
                                           </Button>
                                           <Button
                                             variant="destructive"
-                                            onClick={() => setConfirmAction(null)}
+                                            onClick={() =>
+                                              setConfirmAction(null)
+                                            }
                                           >
                                             Cancel
                                           </Button>
@@ -767,19 +770,17 @@ export default function AdminDashboard() {
                               {showDeleteSuccess && (
                                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
                                   <div className="bg-white dark:bg-zinc-900 rounded-lg shadow-lg p-6 w-full max-w-md flex flex-col items-center">
-                                    <Image
-                                      src="/public/success.gif"
-                                      alt="Success"
-                                      width={120}
-                                      height={120}
-                                      className="mb-4"
-                                    />
+                                    <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mb-4">
+                                      <CheckCircle className="h-10 w-10 text-green-600 dark:text-green-400" />
+                                    </div>
                                     <h2 className="text-lg font-semibold mb-2 text-green-600 flex items-center gap-2">
                                       <CheckCircle className="h-6 w-6 text-green-500" />
                                       User deleted successfully!
                                     </h2>
                                     <Button
-                                      onClick={() => setShowDeleteSuccess(false)}
+                                      onClick={() =>
+                                        setShowDeleteSuccess(false)
+                                      }
                                       className="mt-2 w-full"
                                     >
                                       Close
@@ -1150,17 +1151,13 @@ export default function AdminDashboard() {
         {showSuccessModal && createdUserInfo && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
             <div className="bg-white dark:bg-zinc-900 rounded-lg shadow-lg p-6 w-full max-w-md flex flex-col items-center">
-              {/* Success Animation GIF */}
-              <Image
-                src="/public/success.gif"
-                alt="Success"
-                width={120}
-                height={120}
-                className="mb-4"
-              />
+              {/* Success Animation */}
+              <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mb-4">
+                <CheckCircle className="h-10 w-10 text-green-600 dark:text-green-400" />
+              </div>
               <h2 className="text-lg font-semibold mb-2 text-green-600 flex items-center gap-2">
-                <CheckCircle className="h-6 w-6 text-green-500" />{" "}
-                User Created Successfully!
+                <CheckCircle className="h-6 w-6 text-green-500" /> User Created
+                Successfully!
               </h2>
               <div className="mb-2 text-center">
                 <div className="text-sm text-muted-foreground">
