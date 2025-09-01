@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
+import { useSession, signOut } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -11,71 +12,66 @@ import {
   LogOut,
   Menu,
   X,
+  Trash2,
+  AlertCircle,
+  Loader2,
+  Wifi,
+  WifiOff,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "@/components/theme-toggle";
-
-type Message = {
-  id: string;
-  content: string;
-  isUser: boolean;
-  timestamp: Date;
-};
-
-type Conversation = {
-  id: string;
-  title: string;
-  lastMessage: string;
-  timestamp: Date;
-};
+import { useChat } from "@/hooks/useChat";
 
 export default function ScriptingAgentPage() {
-  const [messages, setMessages] = useState<Message[]>([]);
+  const { data: session } = useSession();
   const [input, setInput] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const conversations: Conversation[] = [
-    {
-      id: "1",
-      title: "New conversation",
-      lastMessage: "Hello! How can I help you today?",
-      timestamp: new Date(),
-    },
-    {
-      id: "2",
-      title: "Script ideas",
-      lastMessage: "Here are some script ideas...",
-      timestamp: new Date(Date.now() - 3600000),
-    },
-  ];
+  const {
+    chats,
+    currentChat,
+    isLoading,
+    error,
+    apiConnected,
+    createNewChat,
+    selectChat,
+    sendMessage,
+    deleteChat,
+    clearError,
+    refreshChats,
+  } = useChat();
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [currentChat?.messages]);
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!input.trim()) return;
+    if (!input.trim() || isLoading) return;
 
-    const userMessage: Message = {
-      id: Date.now().toString(),
-      content: input,
-      isUser: true,
-      timestamp: new Date(),
-    };
-
-    setMessages((prev) => [...prev, userMessage]);
+    const message = input;
     setInput("");
-    setIsLoading(true);
+    await sendMessage(message);
+  };
 
-    // Simulate AI response
-    setTimeout(() => {
-      const aiMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        content: `I'm your Scripting Agent. You said: "${input}"`,
-        isUser: false,
-        timestamp: new Date(),
-      };
-      setMessages((prev) => [...prev, aiMessage]);
-      setIsLoading(false);
-    }, 1000);
+  const handleNewChat = () => {
+    createNewChat();
+    setIsSidebarOpen(false); // Close sidebar on mobile
+  };
+
+  const handleSelectChat = (chatId: string) => {
+    selectChat(chatId);
+    setIsSidebarOpen(false); // Close sidebar on mobile
+  };
+
+  const handleDeleteChat = (e: React.MouseEvent, chatId: string) => {
+    e.stopPropagation();
+    deleteChat(chatId);
   };
 
   return (
@@ -100,25 +96,87 @@ export default function ScriptingAgentPage() {
               </div>
             </div>
           </div>
+
+          {/* API Status */}
+          <div className="px-4 py-2 border-b border-border">
+            <div className="flex items-center gap-2 text-xs">
+              {apiConnected ? (
+                <>
+                  <Wifi className="h-3 w-3 text-green-500" />
+                  <span className="text-green-500">API Connected</span>
+                </>
+              ) : (
+                <>
+                  <WifiOff className="h-3 w-3 text-red-500" />
+                  <span className="text-red-500">API Offline</span>
+                </>
+              )}
+            </div>
+          </div>
+
           {/* New Chat Button */}
           <div className="p-4 border-b border-border">
-            <Button className="w-full justify-start gap-2 bg-primary hover:bg-primary/90 text-primary-foreground">
+            <Button 
+              onClick={handleNewChat}
+              className="w-full justify-start gap-2 bg-primary hover:bg-primary/90 text-primary-foreground"
+              disabled={!session}
+            >
               <Plus className="h-4 w-4" />
               New chat
             </Button>
           </div>
 
+          {/* Error Display */}
+          {error && (
+            <div className="px-4 py-2">
+              <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-3 text-sm">
+                <div className="flex items-center gap-2 text-destructive mb-1">
+                  <AlertCircle className="h-4 w-4" />
+                  <span>Error</span>
+                </div>
+                <p className="text-destructive text-xs">{error}</p>
+                <Button
+                  onClick={clearError}
+                  size="sm"
+                  variant="ghost"
+                  className="h-6 px-2 mt-2 text-xs"
+                >
+                  Dismiss
+                </Button>
+              </div>
+            </div>
+          )}
+
           {/* Conversations List */}
           <div className="flex-1 overflow-y-auto p-2">
             <div className="space-y-1">
-              {conversations.map((conversation) => (
-                <button
-                  key={conversation.id}
-                  className="w-full text-left p-3 rounded-lg hover:bg-muted flex items-center gap-2 text-sm text-muted-foreground"
+              {chats.map((chat) => (
+                <div
+                  key={chat.id}
+                  className={cn(
+                    "group relative w-full text-left p-3 rounded-lg hover:bg-muted flex items-center gap-2 text-sm cursor-pointer transition-colors",
+                    currentChat?.id === chat.id 
+                      ? "bg-muted text-foreground" 
+                      : "text-muted-foreground"
+                  )}
+                  onClick={() => handleSelectChat(chat.id)}
                 >
-                  <MessageSquare className="h-4 w-4 text-muted-foreground" />
-                  <span className="truncate">{conversation.title}</span>
-                </button>
+                  <MessageSquare className="h-4 w-4 flex-shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <span className="truncate block">{chat.title}</span>
+                    {chat.isLoading && (
+                      <Loader2 className="h-3 w-3 animate-spin mt-1" />
+                    )}
+                  </div>
+                  <Button
+                    onClick={(e) => handleDeleteChat(e, chat.id)}
+                    size="sm"
+                    variant="ghost"
+                    className="opacity-0 group-hover:opacity-100 h-6 w-6 p-0 hover:bg-destructive hover:text-destructive-foreground transition-opacity"
+                  >
+                    <Trash2 className="h-3 w-3" />
+                  </Button>
+                </div>
               ))}
             </div>
           </div>
@@ -127,17 +185,24 @@ export default function ScriptingAgentPage() {
           <div className="p-4 border-t border-border">
             <div className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted cursor-pointer">
               <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center text-sm font-medium text-muted-foreground">
-                U
+                {session?.user?.name?.[0] || session?.user?.email?.[0] || 'U'}
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium truncate text-foreground">
-                  User
+                  {session?.user?.name || session?.user?.email || 'User'}
                 </p>
                 <p className="text-xs text-muted-foreground truncate">
                   Free Plan
                 </p>
               </div>
-              <Settings className="h-4 w-4 text-muted-foreground" />
+              <Button
+                onClick={() => signOut()}
+                size="sm"
+                variant="ghost"
+                className="h-6 w-6 p-0"
+              >
+                <LogOut className="h-4 w-4 text-muted-foreground" />
+              </Button>
             </div>
           </div>
         </div>
@@ -159,17 +224,26 @@ export default function ScriptingAgentPage() {
               )}
             </button>
             <h1 className="text-xl font-semibold text-foreground">
-              Scripting Agent
+              {currentChat?.title || "Scripting Agent"}
             </h1>
           </div>
           <div className="flex items-center gap-2">
+            <Button
+              onClick={refreshChats}
+              size="sm"
+              variant="ghost"
+              className="h-8 w-8 p-0"
+              disabled={isLoading}
+            >
+              <Loader2 className={cn("h-4 w-4", isLoading && "animate-spin")} />
+            </Button>
             <ThemeToggle />
           </div>
         </header>
 
         {/* Chat Area */}
         <div className="flex-1 overflow-y-auto p-4 md:p-6 bg-background">
-          {messages.length === 0 ? (
+          {!currentChat || currentChat.messages.length === 0 ? (
             <div className="h-full flex flex-col items-center justify-center text-center p-4 max-w-2xl mx-auto">
               <h2 className="text-2xl font-semibold mb-2 text-foreground">
                 How can I help you today?
@@ -180,10 +254,10 @@ export default function ScriptingAgentPage() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-3xl">
                 {[
-                  "Write a short form script for a tech company",
-                  "Write a short form script for a tech company",
-                  "Write a short form script for a tech company",
-                  "Write a short form script for a tech company",
+                  "Write a Python script to automate file organization",
+                  "Create a bash script for system monitoring", 
+                  "Help me debug a JavaScript function",
+                  "Generate a PowerShell script for user management",
                 ].map((suggestion, i) => (
                   <button
                     key={i}
@@ -197,18 +271,18 @@ export default function ScriptingAgentPage() {
             </div>
           ) : (
             <div className="max-w-3xl mx-auto space-y-6">
-              {messages.map((message) => (
+              {currentChat.messages.map((message, index) => (
                 <div
-                  key={message.id}
+                  key={index}
                   className={cn(
                     "flex",
-                    message.isUser ? "justify-end" : "justify-start"
+                    message.role === "user" ? "justify-end" : "justify-start"
                   )}
                 >
                   <div
                     className={cn(
-                      "max-w-[80%] rounded-2xl px-4 py-3 text-sm",
-                      message.isUser
+                      "max-w-[80%] rounded-2xl px-4 py-3 text-sm whitespace-pre-wrap",
+                      message.role === "user"
                         ? "bg-primary text-primary-foreground rounded-br-none"
                         : "bg-muted text-foreground rounded-bl-none"
                     )}
@@ -217,7 +291,7 @@ export default function ScriptingAgentPage() {
                   </div>
                 </div>
               ))}
-              {isLoading && (
+              {currentChat.isLoading && (
                 <div className="flex justify-start">
                   <div className="bg-muted rounded-2xl px-4 py-3 rounded-bl-none">
                     <div className="flex space-x-2">
@@ -228,6 +302,7 @@ export default function ScriptingAgentPage() {
                   </div>
                 </div>
               )}
+              <div ref={messagesEndRef} />
             </div>
           )}
         </div>
@@ -242,17 +317,27 @@ export default function ScriptingAgentPage() {
               <Input
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                placeholder="Message Scripting Agent..."
+                placeholder={
+                  !session 
+                    ? "Please sign in to start chatting..."
+                    : !apiConnected 
+                    ? "API not connected..." 
+                    : "Message Scripting Agent..."
+                }
                 className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0 shadow-none bg-transparent text-foreground"
-                disabled={isLoading}
+                disabled={isLoading || !session || !apiConnected}
               />
               <Button
                 type="submit"
                 size="icon"
-                disabled={isLoading || !input.trim()}
+                disabled={isLoading || !input.trim() || !session || !apiConnected}
                 className="h-9 w-9 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground flex-shrink-0"
               >
-                <Send className="h-4 w-4" />
+                {isLoading ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Send className="h-4 w-4" />
+                )}
               </Button>
             </form>
             <p className="text-xs text-center text-muted-foreground mt-2">
