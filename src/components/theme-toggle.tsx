@@ -17,7 +17,7 @@ export function ThemeToggle() {
       variant="outline" 
       size="icon" 
       onClick={toggleTheme}
-      className="border-gray-300 dark:border-gray-600"
+      className="border-goat-brown/30 hover:border-goat-brown hover:bg-goat-brown/10 transition-all duration-200 hover:rotate-12 hover:shadow-lg"
     >
       <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
       <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />

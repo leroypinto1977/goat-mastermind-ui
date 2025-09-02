@@ -3,26 +3,24 @@
 import { useState, useRef, useEffect } from "react";
 import { useSession, signOut } from "next-auth/react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { ModernChatInput } from "@/components/ui/modern-chat-input";
 import {
-  Send,
   Plus,
   MessageSquare,
-  Settings,
   LogOut,
   Menu,
   X,
   Trash2,
   AlertCircle,
   Loader2,
-  Wifi,
-  WifiOff,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { useChat } from "@/hooks/useChat";
 import { MarkdownMessage } from "@/components/markdown-message";
 import { DeleteChatModal } from "@/components/delete-chat-modal";
+import { buttonPresets, buttonAnimations } from "@/lib/button-animations";
+import { GoatLogo } from "@/components/goat-logo";
 
 export default function ScriptingAgentPage() {
   const { data: session } = useSession();
@@ -57,13 +55,24 @@ export default function ScriptingAgentPage() {
     scrollToBottom();
   }, [currentChat?.messages]);
 
-  const handleSendMessage = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSendMessage = async () => {
     if (!input.trim() || isLoading) return;
 
     const message = input;
     setInput("");
     await sendMessage(message);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    // Submit on Enter (without Command/Ctrl)
+    if (e.key === 'Enter' && !e.metaKey && !e.ctrlKey && !e.shiftKey) {
+      e.preventDefault();
+      if (input.trim() && !isLoading && session && apiConnected) {
+        handleSendMessage();
+      }
+    }
+    // Allow new line on Command+Enter, Ctrl+Enter, or Shift+Enter
+    // These combinations will naturally create new lines, so we don't prevent default
   };
 
   const handleNewChat = () => {
@@ -117,17 +126,12 @@ export default function ScriptingAgentPage() {
           {/* Logo */}
           <div className="p-4 border-b border-border">
             <div className="flex items-center justify-center">
-              <div className="text-2xl font-bold text-muted-foreground flex items-center gap-2">
-                <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center text-primary-foreground text-lg">
-                  G
-                </div>
-                <span className="text-foreground">GOAT AI</span>
-              </div>
+              <GoatLogo size="md" variant="full" />
             </div>
           </div>
 
-          {/* API Status */}
-          <div className="px-4 py-2 border-b border-border">
+          {/* API Status - Hidden for now */}
+          {/* <div className="px-4 py-2 border-b border-border">
             <div className="flex items-center gap-2 text-xs">
               {apiConnected ? (
                 <>
@@ -141,13 +145,13 @@ export default function ScriptingAgentPage() {
                 </>
               )}
             </div>
-          </div>
+          </div> */}
 
           {/* New Chat Button */}
           <div className="p-4 border-b border-border">
             <Button
               onClick={handleNewChat}
-              className="w-full justify-start gap-2 bg-primary hover:bg-primary/90 text-primary-foreground"
+              className={`w-full justify-start gap-2 bg-primary hover:bg-primary/90 text-primary-foreground ${buttonPresets.primary}`}
               disabled={!session}
             >
               <Plus className="h-4 w-4" />
@@ -168,7 +172,7 @@ export default function ScriptingAgentPage() {
                   onClick={clearError}
                   size="sm"
                   variant="ghost"
-                  className="h-6 px-2 mt-2 text-xs"
+                  className={`h-6 px-2 mt-2 text-xs ${buttonAnimations.subtle}`}
                 >
                   Dismiss
                 </Button>
@@ -242,8 +246,9 @@ export default function ScriptingAgentPage() {
         {/* Header */}
         <header className="bg-card p-4 flex items-center justify-between border-b border-border">
           <div className="flex items-center gap-4">
+            {/* <GoatLogo size="md" /> */}
             <button
-              className="md:hidden p-2 rounded-lg hover:bg-muted"
+              className="md:hidden p-2 rounded-lg hover:bg-muted transition-all duration-200 transform hover:scale-105 active:scale-95 hover:shadow-md"
               onClick={() => setIsSidebarOpen(!isSidebarOpen)}
             >
               {isSidebarOpen ? (
@@ -257,15 +262,16 @@ export default function ScriptingAgentPage() {
             </h1>
           </div>
           <div className="flex items-center gap-2">
-            <Button
+            {/* Reload button - Hidden for now */}
+            {/* <Button
               onClick={refreshChats}
               size="sm"
               variant="ghost"
-              className="h-8 w-8 p-0"
+              className={`h-8 w-8 p-0 ${buttonPresets.icon}`}
               disabled={isLoading}
             >
               <Loader2 className={cn("h-4 w-4", isLoading && "animate-spin")} />
-            </Button>
+            </Button> */}
             <ThemeToggle />
           </div>
         </header>
@@ -331,44 +337,29 @@ export default function ScriptingAgentPage() {
         </div>
 
         {/* Input Area */}
-        <div className="bg-card p-4 border-t border-border">
+        <div className="bg-gradient-to-t from-background/95 to-background/60 backdrop-blur-sm p-4 border-t border-border/50">
           <div className="max-w-3xl mx-auto">
-            <form
+            <ModernChatInput
+              value={input}
+              onChange={setInput}
               onSubmit={handleSendMessage}
-              className="flex items-end gap-2 border border-border rounded-xl p-1.5 bg-background shadow-sm focus-within:ring-2 focus-within:ring-ring focus-within:border-transparent transition-all"
-            >
-              <Input
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                placeholder={
-                  !session
-                    ? "Please sign in to start chatting..."
-                    : !apiConnected
-                    ? "API not connected..."
-                    : "Message Scripting Agent..."
-                }
-                className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0 shadow-none bg-transparent text-foreground"
-                disabled={isLoading || !session || !apiConnected}
-              />
-              <Button
-                type="submit"
-                size="icon"
-                disabled={
-                  isLoading || !input.trim() || !session || !apiConnected
-                }
-                className="h-9 w-9 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground flex-shrink-0"
-              >
-                {isLoading ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <Send className="h-4 w-4" />
-                )}
-              </Button>
-            </form>
-            <p className="text-xs text-center text-muted-foreground mt-2">
-              Scripting Agent can make mistakes. Consider checking important
-              information.
-            </p>
+              onKeyDown={handleKeyDown}
+              placeholder={
+                !session
+                  ? "Please sign in to start chatting..."
+                  : !apiConnected
+                  ? "API not connected..."
+                  : "Message Scripting Agent..."
+              }
+              disabled={isLoading || !session || !apiConnected}
+              loading={isLoading}
+            />
+            
+            <div className="mt-3 text-center">
+              <p className="text-xs text-muted-foreground/80">
+                Scripting Agent can make mistakes. Consider checking important information.
+              </p>
+            </div>
           </div>
         </div>
       </div>

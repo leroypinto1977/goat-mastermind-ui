@@ -1,7 +1,8 @@
-import { PrismaClient, UserStatus } from "@prisma/client";
+import { UserStatus } from "@prisma/client";
 import { compare, hash } from "bcryptjs";
 import { prisma } from "./prisma";
 import crypto from "crypto";
+import { EmailService } from "./email-service";
 
 export interface CreateUserInput {
   email: string;
@@ -279,7 +280,9 @@ export class AuthService {
         browser: deviceInfo.browser || null,
         os: deviceInfo.os || null,
         ipAddress: deviceInfo.ipAddress || null,
-        fingerprint: deviceInfo.fingerprint || `${userId}-${Date.now()}-${Math.random().toString(36).substring(7)}`,
+        fingerprint:
+          deviceInfo.fingerprint ||
+          `${userId}-${Date.now()}-${Math.random().toString(36).substring(7)}`,
       },
     });
 
@@ -345,6 +348,18 @@ export class AuthService {
             userAgent: "Admin Action",
           },
         });
+      }
+
+      // Send welcome email with credentials
+      const emailSent = await EmailService.sendWelcomeEmail(
+        data.email,
+        tempPassword,
+        data.name
+      );
+
+      if (!emailSent) {
+        console.error('Failed to send welcome email to:', data.email);
+        // Don't fail user creation if email fails
       }
 
       return {

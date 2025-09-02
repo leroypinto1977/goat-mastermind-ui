@@ -1,0 +1,26 @@
+<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="favicon16-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#b87333;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#a0663b;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#8b5a2b;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background circle -->
+  <circle cx="8" cy="8" r="7" fill="url(#favicon16-gradient)" stroke="#ffffff" stroke-width="0.5"/>
+  
+  <!-- Simplified goat icon for 16px -->
+  <g fill="white">
+    <!-- Main head -->
+    <circle cx="8" cy="9" r="3"/>
+    <!-- Horns -->
+    <path d="M6 7 L5 6 M10 7 L11 6" stroke="white" stroke-width="0.5" fill="none"/>
+    <!-- Eyes -->
+    <circle cx="7" cy="8.5" r="0.3" fill="#8b5a2b"/>
+    <circle cx="9" cy="8.5" r="0.3" fill="#8b5a2b"/>
+  </g>
+  
+  <!-- G for GOAT (simplified for 16px) -->
+  <text x="8" y="4" text-anchor="middle" font-family="Arial, sans-serif" font-weight="bold" font-size="2" fill="white">G</text>
+</svg>

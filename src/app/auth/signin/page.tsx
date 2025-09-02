@@ -3,6 +3,7 @@
 import { useState, useEffect, Suspense } from "react";
 import { signIn } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
+import Link from "next/link";
 import {
   Card,
   CardContent,
@@ -13,6 +14,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { GoatLogo } from "@/components/goat-logo";
 
 function SignInForm() {
   const [email, setEmail] = useState("");
@@ -112,6 +114,19 @@ function SignInForm() {
           <Button type="submit" className="w-full" disabled={loading}>
             {loading ? "Signing in..." : "Sign In"}
           </Button>
+
+          <div className="text-center">
+            <Link 
+              href="/auth/forgot-password"
+              className="text-sm text-primary hover:text-primary/80 transition-colors underline-offset-4 hover:underline"
+            >
+              Forgot your password?
+            </Link>
+          </div>
+          
+          <div className="text-center text-sm text-muted-foreground mt-4 pt-4 border-t border-border">
+            If you don't have your credentials please contact the support team
+          </div>
         </form>
       </CardContent>
     </Card>
@@ -121,6 +136,9 @@ function SignInForm() {
 export default function SignIn() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
+      <div className="absolute top-4 left-4">
+        <GoatLogo size="lg" />
+      </div>
       <div className="absolute top-4 right-4">
         <ThemeToggle />
       </div>

@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { SessionProvider } from "next-auth/react";
+import { Toaster } from "sonner";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -15,8 +16,19 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "GOAT Mastermind",
-  description: "AI-powered content creation platform",
+  title: "GOAT Mastermind - AI Agent Hub",
+  description: "The Greatest AI Agent Platform - Create, collaborate, and conquer with powerful AI agents",
+  manifest: "/manifest.json",
+  themeColor: "#b87333",
+  icons: {
+    icon: [
+      { url: '/favicon-16x16.svg', type: 'image/svg+xml', sizes: '16x16' },
+      { url: '/favicon.svg', type: 'image/svg+xml', sizes: '32x32' },
+      { url: '/goat-logo.svg', type: 'image/svg+xml', sizes: '64x64' }
+    ],
+    shortcut: '/favicon.svg',
+    apple: '/goat-logo.svg',
+  },
 };
 
 export default function RootLayout({
@@ -37,6 +49,11 @@ export default function RootLayout({
             disableTransitionOnChange
           >
             {children}
+            <Toaster 
+              position="top-right"
+              richColors
+              closeButton
+            />
           </ThemeProvider>
         </SessionProvider>
       </body>

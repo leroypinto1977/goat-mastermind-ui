@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { AlertCircle, X } from "lucide-react";
+import { buttonPresets } from "@/lib/button-animations";
 
 interface DeleteChatModalProps {
   isOpen: boolean;
@@ -61,7 +62,7 @@ export function DeleteChatModal({
             onClick={onCancel}
             variant="ghost"
             size="sm"
-            className="h-8 w-8 p-0 hover:bg-muted"
+            className={`h-8 w-8 p-0 hover:bg-muted ${buttonPresets.icon}`}
           >
             <X className="h-4 w-4" />
           </Button>
@@ -82,7 +83,7 @@ export function DeleteChatModal({
             onClick={onCancel}
             variant="outline"
             size="sm"
-            className="h-9"
+            className={`h-9 ${buttonPresets.secondary}`}
           >
             Cancel
           </Button>
@@ -90,7 +91,7 @@ export function DeleteChatModal({
             onClick={onConfirm}
             variant="destructive"
             size="sm"
-            className="h-9"
+            className={`h-9 ${buttonPresets.destructive}`}
           >
             Delete Chat
           </Button>

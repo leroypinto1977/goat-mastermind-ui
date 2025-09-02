@@ -1,0 +1,18 @@
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="goatGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#b87333;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#a0663b;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#8b5a2b;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background circle -->
+  <circle cx="32" cy="32" r="30" fill="url(#goatGradient)" stroke="#ffffff" stroke-width="2"/>
+  
+  <!-- Goat emoji styled icon -->
+  <text x="32" y="42" text-anchor="middle" font-size="28" fill="white">🐐</text>
+  
+  <!-- GOAT text (small) -->
+  <text x="32" y="8" text-anchor="middle" font-family="Arial, sans-serif" font-weight="bold" font-size="6" fill="white">GOAT</text>
+</svg>

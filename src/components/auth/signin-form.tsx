@@ -36,7 +36,7 @@ export default function SignInForm() {
         // Redirect will be handled by middleware
         window.location.href = "/";
       }
-    } catch (err) {
+    } catch {
       setError("An unexpected error occurred");
     } finally {
       setIsLoading(false);
