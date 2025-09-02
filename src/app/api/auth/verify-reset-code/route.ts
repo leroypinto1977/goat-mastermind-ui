@@ -1,5 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import { NextRequest, NextResponse } from "next/server";
+import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
@@ -9,13 +9,13 @@ export async function POST(request: NextRequest) {
 
     if (!email || !code) {
       return NextResponse.json(
-        { error: 'Email and code are required' },
+        { error: "Email and code are required" },
         { status: 400 }
       );
     }
 
     // Find user with matching email and reset code
-    const user = await prisma.user.findFirst({
+    const user = (await prisma.user.findFirst({
       where: {
         email: email.toLowerCase(),
         resetToken: code,
@@ -23,17 +23,18 @@ export async function POST(request: NextRequest) {
           gt: new Date(), // Token must not be expired
         },
       },
-    }) as any;
+    })) as any;
 
     if (!user) {
       return NextResponse.json(
-        { error: 'Invalid or expired code' },
+        { error: "Invalid or expired code" },
         { status: 400 }
       );
     }
 
     // Generate a temporary verification token for password reset
-    const verificationToken = Math.random().toString(36).substring(2) + Date.now().toString(36);
+    const verificationToken =
+      Math.random().toString(36).substring(2) + Date.now().toString(36);
 
     // Store verification token (we'll use this to verify the password reset)
     await (prisma.user.update as any)({
@@ -45,17 +46,16 @@ export async function POST(request: NextRequest) {
     });
 
     return NextResponse.json(
-      { 
-        message: 'Code verified successfully',
-        verificationToken 
+      {
+        message: "Code verified successfully",
+        verificationToken,
       },
       { status: 200 }
     );
-
   } catch (error) {
-    console.error('Verify code error:', error);
+    console.error("Verify code error:", error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: "Internal server error" },
       { status: 500 }
     );
   }

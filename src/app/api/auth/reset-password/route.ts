@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
-import bcrypt from 'bcryptjs';
+import { NextRequest, NextResponse } from "next/server";
+import { PrismaClient } from "@prisma/client";
+import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
 
@@ -10,7 +10,7 @@ export async function POST(request: NextRequest) {
 
     if (!email || !verificationToken || !newPassword) {
       return NextResponse.json(
-        { error: 'Email, verification token, and new password are required' },
+        { error: "Email, verification token, and new password are required" },
         { status: 400 }
       );
     }
@@ -18,13 +18,13 @@ export async function POST(request: NextRequest) {
     // Validate password strength
     if (newPassword.length < 8) {
       return NextResponse.json(
-        { error: 'Password must be at least 8 characters long' },
+        { error: "Password must be at least 8 characters long" },
         { status: 400 }
       );
     }
 
     // Find user with matching verification token
-    const user = await prisma.user.findFirst({
+    const user = (await prisma.user.findFirst({
       where: {
         email: email.toLowerCase(),
         resetToken: verificationToken,
@@ -32,11 +32,11 @@ export async function POST(request: NextRequest) {
           gt: new Date(), // Token must not be expired
         },
       },
-    }) as any;
+    })) as any;
 
     if (!user) {
       return NextResponse.json(
-        { error: 'Invalid or expired verification token' },
+        { error: "Invalid or expired verification token" },
         { status: 400 }
       );
     }
@@ -62,14 +62,13 @@ export async function POST(request: NextRequest) {
     });
 
     return NextResponse.json(
-      { message: 'Password reset successfully' },
+      { message: "Password reset successfully" },
       { status: 200 }
     );
-
   } catch (error) {
-    console.error('Reset password error:', error);
+    console.error("Reset password error:", error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: "Internal server error" },
       { status: 500 }
     );
   }
