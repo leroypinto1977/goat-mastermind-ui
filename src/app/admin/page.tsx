@@ -4,6 +4,7 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { X } from "lucide-react";
+import { toast } from "sonner";
 import {
   Card,
   CardContent,
@@ -29,6 +30,7 @@ import {
   Smartphone,
   Tablet,
   Trash2,
+  RefreshCw,
 } from "lucide-react";
 
 type User = {
@@ -86,6 +88,8 @@ export default function AdminDashboard() {
   const [devices, setDevices] = useState<Device[]>([]);
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
   const [loading, setLoading] = useState(false);
+  const [statsLoading, setStatsLoading] = useState(false);
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [showCreateUser, setShowCreateUser] = useState(false);
   const [selectedUser, setSelectedUser] = useState<
     (User & { tempPasswordMessage?: string; isFirstLogin?: boolean }) | null
@@ -133,6 +137,133 @@ export default function AdminDashboard() {
       loadData();
     }
   }, [activeTab, session]);
+
+  // Load all stats data on mount (one time only)
+  useEffect(() => {
+    if (session?.user?.role === "ADMIN") {
+      // Initial load of all data for stats (only once on mount)
+      loadAllStatsData();
+    }
+  }, [session]);
+
+  const refreshDevicesOnly = async () => {
+    setStatsLoading(true);
+    try {
+      console.log("🔄 Refreshing devices data for Active Sessions...");
+
+      const devicesResponse = await fetch("/api/admin/devices");
+      if (devicesResponse.ok) {
+        const deviceData = await devicesResponse.json();
+        const newDevices = deviceData.devices || [];
+        setDevices(newDevices);
+
+        // Calculate active sessions from the fresh data
+        const activeSessionsCount = newDevices.filter(
+          (d: any) => d.isActive
+        ).length;
+
+        console.log(
+          "✅ Updated devices data:",
+          newDevices.length,
+          "devices,",
+          activeSessionsCount,
+          "active"
+        );
+
+        // Show success toast with correct count
+        toast.success(
+          `Active sessions refreshed! ${activeSessionsCount} active sessions found.`,
+          {
+            duration: 3000,
+          }
+        );
+      }
+
+      setLastUpdated(new Date());
+    } catch (error) {
+      console.error("❌ Error refreshing devices data:", error);
+      toast.error("Failed to refresh active sessions data", {
+        duration: 3000,
+      });
+    } finally {
+      setStatsLoading(false);
+    }
+  };
+
+  const loadAllStatsData = async () => {
+    setStatsLoading(true);
+    try {
+      console.log("🔄 Loading all stats data for admin dashboard...");
+
+      // Load users data
+      try {
+        const usersResponse = await fetch("/api/admin/users");
+        if (usersResponse.ok) {
+          const userData = await usersResponse.json();
+          setUsers(userData.users || []);
+          console.log(
+            "✅ Updated users data:",
+            userData.users?.length || 0,
+            "users"
+          );
+        }
+      } catch (error) {
+        console.error("Error loading users:", error);
+      }
+
+      // Load devices data
+      try {
+        const devicesResponse = await fetch("/api/admin/devices");
+        if (devicesResponse.ok) {
+          const deviceData = await devicesResponse.json();
+          setDevices(deviceData.devices || []);
+          console.log(
+            "✅ Updated devices data:",
+            deviceData.devices?.length || 0,
+            "devices,",
+            deviceData.devices?.filter((d: any) => d.isActive).length || 0,
+            "active"
+          );
+        }
+      } catch (error) {
+        console.error("Error loading devices:", error);
+      }
+
+      // Load audit data
+      try {
+        const auditResponse = await fetch("/api/admin/audit");
+        if (auditResponse.ok) {
+          const auditData = await auditResponse.json();
+          setAuditLogs(auditData.logs || []);
+          console.log(
+            "✅ Updated audit data:",
+            auditData.logs?.length || 0,
+            "logs"
+          );
+        }
+      } catch (error) {
+        console.error("Error loading audit:", error);
+      }
+
+      setLastUpdated(new Date());
+
+      // Show success toast
+      const activeSessionsCount = devices.filter((d: any) => d.isActive).length;
+      toast.success(
+        `Dashboard updated! ${activeSessionsCount} active sessions found.`,
+        {
+          duration: 3000,
+        }
+      );
+    } catch (error) {
+      console.error("❌ Error loading stats data:", error);
+      toast.error("Failed to refresh dashboard data", {
+        duration: 3000,
+      });
+    } finally {
+      setStatsLoading(false);
+    }
+  };
 
   const loadData = async () => {
     setLoading(true);
@@ -509,12 +640,30 @@ export default function AdminDashboard() {
             <GoatLogo size="lg" />
             <div>
               <h1 className="text-3xl font-bold">Admin Dashboard</h1>
-              <p className="text-muted-foreground">
-                Manage users, monitor sessions, and view system activity
-              </p>
+              <div className="flex items-center gap-4">
+                <p className="text-muted-foreground">
+                  Manage users, monitor sessions, and view system activity
+                </p>
+                {lastUpdated && (
+                  <p className="text-xs text-muted-foreground">
+                    Last updated: {lastUpdated.toLocaleTimeString()}
+                  </p>
+                )}
+              </div>
             </div>
           </div>
           <div className="flex items-center gap-4">
+            <Button
+              variant="outline"
+              onClick={loadAllStatsData}
+              disabled={statsLoading}
+              className="flex items-center gap-2"
+            >
+              <RefreshCw
+                className={`h-4 w-4 ${statsLoading ? "animate-spin" : ""}`}
+              />
+              {statsLoading ? "Refreshing..." : "Refresh Data"}
+            </Button>
             <ThemeToggle />
             <Button
               variant="outline"
@@ -529,7 +678,7 @@ export default function AdminDashboard() {
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <Card className="transition-all duration-200 hover:scale-105 hover:shadow-lg cursor-pointer">
+          <Card className="transition-all duration-200 hover:scale-105 hover:shadow-lg">
             <CardContent className="px-4 py-0">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
@@ -541,12 +690,22 @@ export default function AdminDashboard() {
             </CardContent>
           </Card>
 
-          <Card className="transition-all duration-200 hover:scale-105 hover:shadow-lg cursor-pointer">
+          <Card
+            className="transition-all duration-200 hover:scale-105 hover:shadow-lg cursor-pointer"
+            onClick={refreshDevicesOnly}
+          >
             <CardContent className="px-4 py-0">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <Activity className="h-8 w-8 text-green-500" />
-                  <p className="text-sm font-medium">Active Sessions</p>
+                  <Activity
+                    className={`h-8 w-8 text-green-500 ${statsLoading ? "animate-pulse" : ""}`}
+                  />
+                  <div className="flex flex-col">
+                    <p className="text-sm font-medium">Active Sessions</p>
+                    <p className="text-xs text-muted-foreground">
+                      {statsLoading ? "Refreshing..." : "Click to refresh"}
+                    </p>
+                  </div>
                 </div>
                 <p className="text-2xl font-bold">
                   {devices.filter((d) => d.isActive).length}
@@ -555,7 +714,7 @@ export default function AdminDashboard() {
             </CardContent>
           </Card>
 
-          <Card className="transition-all duration-200 hover:scale-105 hover:shadow-lg cursor-pointer">
+          <Card className="transition-all duration-200 hover:scale-105 hover:shadow-lg">
             <CardContent className="px-4 py-0">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
@@ -569,7 +728,7 @@ export default function AdminDashboard() {
             </CardContent>
           </Card>
 
-          <Card className="transition-all duration-200 hover:scale-105 hover:shadow-lg cursor-pointer">
+          <Card className="transition-all duration-200 hover:scale-105 hover:shadow-lg">
             <CardContent className="px-4 py-0">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
@@ -1009,7 +1168,9 @@ export default function AdminDashboard() {
                           <div className="flex items-center gap-4 flex-1">
                             <div
                               className={`w-3 h-3 rounded-full ${
-                                device.isActive ? "bg-green-500 animate-pulse" : "bg-gray-400"
+                                device.isActive
+                                  ? "bg-green-500 animate-pulse"
+                                  : "bg-gray-400"
                               }`}
                             />
                             <div className="text-muted-foreground">
@@ -1031,11 +1192,15 @@ export default function AdminDashboard() {
                                 </span>
                               </div>
                               <p className="text-sm text-muted-foreground">
-                                {device.deviceName || "Unknown Device"} • {device.browser} on {device.os}
+                                {device.deviceName || "Unknown Device"} •{" "}
+                                {device.browser} on {device.os}
                               </p>
                               <div className="flex items-center gap-4 mt-1 text-xs text-muted-foreground">
                                 <span>IP: {device.ipAddress}</span>
-                                <span>Last active: {new Date(device.lastActive).toLocaleString()}</span>
+                                <span>
+                                  Last active:{" "}
+                                  {new Date(device.lastActive).toLocaleString()}
+                                </span>
                                 {device.fingerprint && (
                                   <span>ID: {device.fingerprint}</span>
                                 )}
@@ -1056,7 +1221,12 @@ export default function AdminDashboard() {
                               <Button
                                 variant="outline"
                                 size="sm"
-                                onClick={() => handleTerminateDevice(device.id, device.user.email)}
+                                onClick={() =>
+                                  handleTerminateDevice(
+                                    device.id,
+                                    device.user.email
+                                  )
+                                }
                                 className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-950"
                               >
                                 Terminate
@@ -1069,7 +1239,9 @@ export default function AdminDashboard() {
                       <div className="text-center py-8 text-muted-foreground">
                         <Monitor className="h-8 w-8 mx-auto mb-2 opacity-50" />
                         <p>No device sessions found.</p>
-                        <p className="text-sm">Device sessions will appear here when users log in.</p>
+                        <p className="text-sm">
+                          Device sessions will appear here when users log in.
+                        </p>
                       </div>
                     )}
                   </div>
