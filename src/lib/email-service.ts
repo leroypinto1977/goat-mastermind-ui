@@ -137,14 +137,18 @@ Please do not reply to this email.
 
       // If email failed to send, log the verification code for development
       if (!emailResult) {
-        console.error('🚨 EMAIL DELIVERY FAILED - Verification Code Details:');
+        console.error("🚨 EMAIL DELIVERY FAILED - Verification Code Details:");
         console.error(`📧 Recipient: ${email}`);
         console.error(`🔑 Verification Code: ${code}`);
         console.error(`⏰ Code expires in: 10 minutes`);
-        console.error(`👤 User: ${userName || 'Unknown'}`);
+        console.error(`👤 User: ${userName || "Unknown"}`);
         console.error(`🕐 Generated at: ${new Date().toISOString()}`);
-        console.error('⚠️  IMPORTANT: This code is logged due to email delivery failure.');
-        console.error('⚠️  In production, ensure email service is properly configured.');
+        console.error(
+          "⚠️  IMPORTANT: This code is logged due to email delivery failure."
+        );
+        console.error(
+          "⚠️  In production, ensure email service is properly configured."
+        );
       }
 
       return emailResult;
@@ -165,12 +169,14 @@ Please do not reply to this email.
         "📧 Error stack:",
         error instanceof Error ? error.stack : "No stack trace"
       );
-      
+
       // Also log the verification code when there's a rendering/sending error
-      console.error('🚨 EXCEPTION IN PASSWORD RESET EMAIL - Verification Code:');
+      console.error(
+        "🚨 EXCEPTION IN PASSWORD RESET EMAIL - Verification Code:"
+      );
       console.error(`🔑 Code: ${code}`);
       console.error(`📧 For: ${email}`);
-      
+
       return false;
     }
   }
@@ -236,33 +242,43 @@ Please do not reply to this email.
 
       // If email failed to send, log the temporary password for development
       if (!emailResult) {
-        console.error('🚨 WELCOME EMAIL DELIVERY FAILED - Account Details:');
+        console.error("🚨 WELCOME EMAIL DELIVERY FAILED - Account Details:");
         console.error(`📧 Recipient: ${email}`);
         console.error(`🔑 Temporary Password: ${tempPassword}`);
-        console.error(`👤 User: ${userName || 'Unknown'}`);
+        console.error(`👤 User: ${userName || "Unknown"}`);
         console.error(`🕐 Generated at: ${new Date().toISOString()}`);
-        console.error('⚠️  IMPORTANT: Credentials logged due to email delivery failure.');
-        console.error('⚠️  In production, ensure email service is properly configured.');
+        console.error(
+          "⚠️  IMPORTANT: Credentials logged due to email delivery failure."
+        );
+        console.error(
+          "⚠️  In production, ensure email service is properly configured."
+        );
       }
 
       return emailResult;
     } catch (error) {
-      console.error('❌ Error in sendWelcomeEmail method');
-      console.error('📧 Welcome email details:', {
+      console.error("❌ Error in sendWelcomeEmail method");
+      console.error("📧 Welcome email details:", {
         email,
         userName,
         tempPasswordLength: tempPassword?.length || 0, // Don't log the actual password
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
-      console.error('📧 Error during email rendering/sending:', error);
-      console.error('📧 Error message:', error instanceof Error ? error.message : 'Unknown error');
-      console.error('📧 Error stack:', error instanceof Error ? error.stack : 'No stack trace');
-      
+      console.error("📧 Error during email rendering/sending:", error);
+      console.error(
+        "📧 Error message:",
+        error instanceof Error ? error.message : "Unknown error"
+      );
+      console.error(
+        "📧 Error stack:",
+        error instanceof Error ? error.stack : "No stack trace"
+      );
+
       // Also log the temporary password when there's a rendering/sending error
-      console.error('🚨 EXCEPTION IN WELCOME EMAIL - Account Details:');
+      console.error("🚨 EXCEPTION IN WELCOME EMAIL - Account Details:");
       console.error(`🔑 Temporary Password: ${tempPassword}`);
       console.error(`📧 For: ${email}`);
-      
+
       return false;
     }
   }
@@ -271,30 +287,42 @@ Please do not reply to this email.
    * Test email service configuration and log details
    */
   static logEmailConfiguration(): void {
-    console.log('📧 Email Service Configuration:');
-    console.log('📧 RESEND_API_KEY:', process.env.RESEND_API_KEY ? '✅ Set' : '❌ Missing');
-    console.log('📧 RESEND_FROM_EMAIL:', process.env.RESEND_FROM_EMAIL || 'Using default: onboarding@resend.dev');
-    console.log('📧 NEXTAUTH_URL:', process.env.NEXTAUTH_URL || 'Using default: http://localhost:3000');
-    console.log('📧 Current environment:', process.env.NODE_ENV || 'development');
-    console.log('📧 Timestamp:', new Date().toISOString());
+    console.log("📧 Email Service Configuration:");
+    console.log(
+      "📧 RESEND_API_KEY:",
+      process.env.RESEND_API_KEY ? "✅ Set" : "❌ Missing"
+    );
+    console.log(
+      "📧 RESEND_FROM_EMAIL:",
+      process.env.RESEND_FROM_EMAIL || "Using default: onboarding@resend.dev"
+    );
+    console.log(
+      "📧 NEXTAUTH_URL:",
+      process.env.NEXTAUTH_URL || "Using default: http://localhost:3000"
+    );
+    console.log(
+      "📧 Current environment:",
+      process.env.NODE_ENV || "development"
+    );
+    console.log("📧 Timestamp:", new Date().toISOString());
   }
 
   /**
    * Send a test email to verify the service is working
    */
   static async sendTestEmail(to: string): Promise<boolean> {
-    console.log('📧 Sending test email...');
+    console.log("📧 Sending test email...");
     this.logEmailConfiguration();
-    
+
     const result = await this.sendEmail({
       to,
-      subject: 'GOAT Mastermind - Test Email',
+      subject: "GOAT Mastermind - Test Email",
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <h2 style="color: oklch(0.45 0.15 65);">🐐 Test Email from GOAT Mastermind</h2>
           <p>This is a test email to verify that the email service is working correctly.</p>
           <p><strong>Timestamp:</strong> ${new Date().toISOString()}</p>
-          <p><strong>Environment:</strong> ${process.env.NODE_ENV || 'development'}</p>
+          <p><strong>Environment:</strong> ${process.env.NODE_ENV || "development"}</p>
           <div style="margin: 20px 0; padding: 15px; background-color: #f5f5f5; border-radius: 8px;">
             <p style="margin: 0;">If you received this email, the GOAT Mastermind email service is configured correctly! 🎉</p>
           </div>
@@ -306,16 +334,16 @@ GOAT Mastermind - Test Email
 This is a test email to verify that the email service is working correctly.
 
 Timestamp: ${new Date().toISOString()}
-Environment: ${process.env.NODE_ENV || 'development'}
+Environment: ${process.env.NODE_ENV || "development"}
 
 If you received this email, the GOAT Mastermind email service is configured correctly! 🎉
-      `
+      `,
     });
 
     if (result) {
-      console.log('📧 Test email sent successfully!');
+      console.log("📧 Test email sent successfully!");
     } else {
-      console.error('📧 Test email failed to send.');
+      console.error("📧 Test email failed to send.");
     }
 
     return result;

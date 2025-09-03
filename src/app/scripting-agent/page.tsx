@@ -65,7 +65,7 @@ export default function ScriptingAgentPage() {
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     // Submit on Enter (without Command/Ctrl)
-    if (e.key === 'Enter' && !e.metaKey && !e.ctrlKey && !e.shiftKey) {
+    if (e.key === "Enter" && !e.metaKey && !e.ctrlKey && !e.shiftKey) {
       e.preventDefault();
       if (input.trim() && !isLoading && session && apiConnected) {
         handleSendMessage();
@@ -348,16 +348,17 @@ export default function ScriptingAgentPage() {
                 !session
                   ? "Please sign in to start chatting..."
                   : !apiConnected
-                  ? "API not connected..."
-                  : "Message Scripting Agent..."
+                    ? "API not connected..."
+                    : "Message Scripting Agent..."
               }
               disabled={isLoading || !session || !apiConnected}
               loading={isLoading}
             />
-            
+
             <div className="mt-3 text-center">
               <p className="text-xs text-muted-foreground/80">
-                Scripting Agent can make mistakes. Consider checking important information.
+                Scripting Agent can make mistakes. Consider checking important
+                information.
               </p>
             </div>
           </div>

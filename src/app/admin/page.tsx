@@ -53,9 +53,14 @@ type Device = {
   ipAddress: string | null;
   isActive: boolean;
   lastActive: string;
+  createdAt: string;
+  fingerprint?: string;
   user: {
+    id: string;
     email: string;
     name?: string;
+    role: string;
+    lastLoginAt?: string | null;
   };
 };
 
@@ -197,9 +202,14 @@ export default function AdminDashboard() {
             ipAddress: "127.0.0.1",
             isActive: true,
             lastActive: new Date().toISOString(),
+            createdAt: new Date().toISOString(),
+            fingerprint: "demo123...",
             user: {
+              id: session?.user?.id || "demo-user-id",
               email: session?.user?.email || "admin@goat.com",
               name: session?.user?.name || "Administrator",
+              role: session?.user?.role || "ADMIN",
+              lastLoginAt: new Date().toISOString(),
             },
           },
         ]);
@@ -407,6 +417,35 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleTerminateDevice = async (deviceId: string, userEmail: string) => {
+    // Confirmation dialog
+    if (
+      !confirm(
+        `Are you sure you want to terminate this device session?\n\nUser: ${userEmail}\n\nThis will log them out immediately.`
+      )
+    ) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/admin/devices?id=${deviceId}`, {
+        method: "DELETE",
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        alert(result.message || "Device session terminated successfully!");
+        await loadDevices(); // Refresh devices list
+      } else {
+        const error = await response.json();
+        alert(`Error: ${error.error || "Failed to terminate device"}`);
+      }
+    } catch (error) {
+      console.error("Error terminating device:", error);
+      alert("Failed to terminate device session");
+    }
+  };
+
   const handleSelectUser = async (user: User) => {
     setSelectedUser(null); // Clear first to show loading
 
@@ -491,53 +530,53 @@ export default function AdminDashboard() {
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <Card className="transition-all duration-200 hover:scale-105 hover:shadow-lg cursor-pointer">
-            <CardContent className="p-6">
-              <div className="flex items-center gap-2">
-                <Users className="h-5 w-5 text-blue-500" />
-                <div>
+            <CardContent className="px-4 py-0">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <Users className="h-8 w-8 text-blue-500" />
                   <p className="text-sm font-medium">Total Users</p>
-                  <p className="text-2xl font-bold">{users.length}</p>
                 </div>
+                <p className="text-2xl font-bold">{users.length}</p>
               </div>
             </CardContent>
           </Card>
 
           <Card className="transition-all duration-200 hover:scale-105 hover:shadow-lg cursor-pointer">
-            <CardContent className="p-6">
-              <div className="flex items-center gap-2">
-                <Activity className="h-5 w-5 text-green-500" />
-                <div>
+            <CardContent className="px-4 py-0">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <Activity className="h-8 w-8 text-green-500" />
                   <p className="text-sm font-medium">Active Sessions</p>
-                  <p className="text-2xl font-bold">
-                    {devices.filter((d) => d.isActive).length}
-                  </p>
                 </div>
+                <p className="text-2xl font-bold">
+                  {devices.filter((d) => d.isActive).length}
+                </p>
               </div>
             </CardContent>
           </Card>
 
           <Card className="transition-all duration-200 hover:scale-105 hover:shadow-lg cursor-pointer">
-            <CardContent className="p-6">
-              <div className="flex items-center gap-2">
-                <Shield className="h-5 w-5 text-purple-500" />
-                <div>
+            <CardContent className="px-4 py-0">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <Shield className="h-8 w-8 text-purple-500" />
                   <p className="text-sm font-medium">Admins</p>
-                  <p className="text-2xl font-bold">
-                    {users.filter((u) => u.role === "ADMIN").length}
-                  </p>
                 </div>
+                <p className="text-2xl font-bold">
+                  {users.filter((u) => u.role === "ADMIN").length}
+                </p>
               </div>
             </CardContent>
           </Card>
 
           <Card className="transition-all duration-200 hover:scale-105 hover:shadow-lg cursor-pointer">
-            <CardContent className="p-6">
-              <div className="flex items-center gap-2">
-                <Clock className="h-5 w-5 text-orange-500" />
-                <div>
+            <CardContent className="px-4 py-0">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <Clock className="h-8 w-8 text-orange-500" />
                   <p className="text-sm font-medium">Recent Activity</p>
-                  <p className="text-2xl font-bold">{auditLogs.length}</p>
                 </div>
+                <p className="text-2xl font-bold">{auditLogs.length}</p>
               </div>
             </CardContent>
           </Card>
@@ -965,34 +1004,47 @@ export default function AdminDashboard() {
                       devices.map((device) => (
                         <div
                           key={device.id}
-                          className="flex items-center justify-between p-4 border rounded-lg"
+                          className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/30 transition-colors"
                         >
-                          <div className="flex items-center gap-4">
+                          <div className="flex items-center gap-4 flex-1">
                             <div
                               className={`w-3 h-3 rounded-full ${
-                                device.isActive ? "bg-green-500" : "bg-gray-400"
+                                device.isActive ? "bg-green-500 animate-pulse" : "bg-gray-400"
                               }`}
                             />
                             <div className="text-muted-foreground">
                               {getDeviceIcon(device.deviceType)}
                             </div>
-                            <div>
-                              <p className="font-medium">
-                                {device.user.name || device.user.email}
-                              </p>
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2 mb-1">
+                                <p className="font-medium">
+                                  {device.user.name || device.user.email}
+                                </p>
+                                <span
+                                  className={`px-2 py-0.5 rounded text-xs font-medium ${
+                                    device.user.role === "ADMIN"
+                                      ? "bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300"
+                                      : "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300"
+                                  }`}
+                                >
+                                  {device.user.role}
+                                </span>
+                              </div>
                               <p className="text-sm text-muted-foreground">
-                                {device.deviceName || "Unknown Device"} •{" "}
-                                {device.browser} on {device.os}
+                                {device.deviceName || "Unknown Device"} • {device.browser} on {device.os}
                               </p>
-                              <p className="text-xs text-muted-foreground">
-                                IP: {device.ipAddress} • Last active:{" "}
-                                {new Date(device.lastActive).toLocaleString()}
-                              </p>
+                              <div className="flex items-center gap-4 mt-1 text-xs text-muted-foreground">
+                                <span>IP: {device.ipAddress}</span>
+                                <span>Last active: {new Date(device.lastActive).toLocaleString()}</span>
+                                {device.fingerprint && (
+                                  <span>ID: {device.fingerprint}</span>
+                                )}
+                              </div>
                             </div>
                           </div>
-                          <div className="text-right">
+                          <div className="flex items-center gap-3">
                             <span
-                              className={`px-2 py-1 rounded-full text-xs ${
+                              className={`px-3 py-1 rounded-full text-xs font-medium ${
                                 device.isActive
                                   ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300"
                                   : "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300"
@@ -1000,12 +1052,24 @@ export default function AdminDashboard() {
                             >
                               {device.isActive ? "Active" : "Inactive"}
                             </span>
+                            {device.isActive && (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleTerminateDevice(device.id, device.user.email)}
+                                className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-950"
+                              >
+                                Terminate
+                              </Button>
+                            )}
                           </div>
                         </div>
                       ))
                     ) : (
                       <div className="text-center py-8 text-muted-foreground">
-                        No device sessions found.
+                        <Monitor className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                        <p>No device sessions found.</p>
+                        <p className="text-sm">Device sessions will appear here when users log in.</p>
                       </div>
                     )}
                   </div>

@@ -358,7 +358,7 @@ export class AuthService {
       );
 
       if (!emailSent) {
-        console.error('Failed to send welcome email to:', data.email);
+        console.error("Failed to send welcome email to:", data.email);
         // Don't fail user creation if email fails
       }
 

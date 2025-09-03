@@ -17,8 +17,11 @@ export async function GET() {
       include: {
         user: {
           select: {
+            id: true,
             email: true,
             name: true,
+            role: true,
+            lastLoginAt: true,
           },
         },
       },
@@ -27,7 +30,36 @@ export async function GET() {
       },
     });
 
-    return NextResponse.json({ devices });
+    // Format devices for admin display
+    const formattedDevices = devices.map(device => ({
+      id: device.id,
+      deviceName: device.deviceName || "Unknown Device",
+      deviceType: device.deviceType || "desktop",
+      browser: device.browser || "Unknown Browser",
+      os: device.os || "Unknown OS",
+      ipAddress: device.ipAddress || "Unknown IP",
+      isActive: device.isActive,
+      lastActive: device.lastActive.toISOString(),
+      createdAt: device.createdAt.toISOString(),
+      user: {
+        id: device.user.id,
+        email: device.user.email,
+        name: device.user.name,
+        role: device.user.role,
+        lastLoginAt: device.user.lastLoginAt?.toISOString() || null,
+      },
+      fingerprint: device.fingerprint.substring(0, 8) + "...", // Truncate for display
+    }));
+
+    return NextResponse.json({ 
+      devices: formattedDevices,
+      summary: {
+        total: devices.length,
+        active: devices.filter(d => d.isActive).length,
+        inactive: devices.filter(d => !d.isActive).length,
+        uniqueUsers: new Set(devices.map(d => d.userId)).size,
+      }
+    });
   } catch (error) {
     console.error("Error fetching devices:", error);
     return NextResponse.json(
@@ -56,6 +88,21 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
+    // Get device info before terminating
+    const device = await prisma.device.findUnique({
+      where: { id: deviceId },
+      include: {
+        user: { select: { email: true, name: true } }
+      }
+    });
+
+    if (!device) {
+      return NextResponse.json(
+        { error: "Device not found" },
+        { status: 404 }
+      );
+    }
+
     // Deactivate the device
     await prisma.device.update({
       where: { id: deviceId },
@@ -69,8 +116,19 @@ export async function DELETE(request: NextRequest) {
     await prisma.auditLog.create({
       data: {
         userId: session.user.id,
-        action: "DEVICE_TERMINATED",
-        details: `Admin terminated device ${deviceId}`,
+        action: "DEVICE_TERMINATED_BY_ADMIN",
+        details: {
+          deviceId,
+          terminatedDevice: {
+            deviceName: device.deviceName,
+            deviceType: device.deviceType,
+            browser: device.browser,
+            os: device.os,
+            ipAddress: device.ipAddress,
+            user: device.user.email,
+          },
+          terminatedBy: session.user.email,
+        },
         ipAddress:
           request.headers.get("x-forwarded-for") ||
           request.headers.get("x-real-ip") ||
@@ -79,7 +137,15 @@ export async function DELETE(request: NextRequest) {
       },
     });
 
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ 
+      success: true,
+      message: `Device terminated for user ${device.user.email}`,
+      device: {
+        id: deviceId,
+        deviceName: device.deviceName,
+        user: device.user.email,
+      }
+    });
   } catch (error) {
     console.error("Error terminating device:", error);
     return NextResponse.json(
