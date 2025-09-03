@@ -11,19 +11,22 @@ interface CodeInputProps {
   className?: string;
 }
 
-export function CodeInput({ 
-  length, 
-  value, 
-  onChange, 
-  disabled = false, 
-  className 
+export function CodeInput({
+  length,
+  value,
+  onChange,
+  disabled = false,
+  className,
 }: CodeInputProps) {
   const [codes, setCodes] = useState<string[]>(Array(length).fill(""));
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   useEffect(() => {
     // Update codes when value prop changes
-    const newCodes = value.split("").concat(Array(length).fill("")).slice(0, length);
+    const newCodes = value
+      .split("")
+      .concat(Array(length).fill(""))
+      .slice(0, length);
     setCodes(newCodes);
   }, [value, length]);
 
@@ -32,11 +35,11 @@ export function CodeInput({
 
     // Only allow single digit
     const digit = inputValue.replace(/\D/g, "").slice(-1);
-    
+
     const newCodes = [...codes];
     newCodes[index] = digit;
     setCodes(newCodes);
-    
+
     // Update parent component
     onChange(newCodes.join(""));
 
@@ -46,14 +49,17 @@ export function CodeInput({
     }
   };
 
-  const handleKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
+  const handleKeyDown = (
+    index: number,
+    e: React.KeyboardEvent<HTMLInputElement>
+  ) => {
     if (disabled) return;
 
     if (e.key === "Backspace") {
       e.preventDefault();
-      
+
       const newCodes = [...codes];
-      
+
       if (codes[index]) {
         // Clear current input if it has a value
         newCodes[index] = "";
@@ -81,18 +87,27 @@ export function CodeInput({
 
   const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
     if (disabled) return;
-    
+
     e.preventDefault();
-    const pastedData = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, length);
-    
+    const pastedData = e.clipboardData
+      .getData("text")
+      .replace(/\D/g, "")
+      .slice(0, length);
+
     if (pastedData) {
-      const newCodes = pastedData.split("").concat(Array(length).fill("")).slice(0, length);
+      const newCodes = pastedData
+        .split("")
+        .concat(Array(length).fill(""))
+        .slice(0, length);
       setCodes(newCodes);
       onChange(newCodes.join(""));
-      
+
       // Focus the next empty input or the last input
-      const nextEmptyIndex = newCodes.findIndex(code => !code);
-      const focusIndex = nextEmptyIndex === -1 ? length - 1 : Math.min(nextEmptyIndex, length - 1);
+      const nextEmptyIndex = newCodes.findIndex((code) => !code);
+      const focusIndex =
+        nextEmptyIndex === -1
+          ? length - 1
+          : Math.min(nextEmptyIndex, length - 1);
       inputRefs.current[focusIndex]?.focus();
     }
   };

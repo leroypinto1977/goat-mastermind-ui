@@ -4,7 +4,8 @@ import { useDeviceTracking } from "@/hooks/use-device-tracking";
 import { useEffect } from "react";
 
 export function DeviceTracker() {
-  const { deviceTracked, sessionEnforced, error, retryTracking } = useDeviceTracking();
+  const { deviceTracked, sessionEnforced, error, retryTracking } =
+    useDeviceTracking();
 
   useEffect(() => {
     if (deviceTracked) {

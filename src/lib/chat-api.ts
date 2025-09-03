@@ -46,7 +46,7 @@ export interface UpdateChatResponse {
   chat_id: string;
 }
 
-const API_BASE_URL = "http://161.35.235.176:8000";
+const API_BASE_URL = process.env.NEXT_PUBLIC_SCRIPTING_API_URL || "http://15.206.158.83:8000";
 
 export class ChatAPI {
   static async sendMessage(

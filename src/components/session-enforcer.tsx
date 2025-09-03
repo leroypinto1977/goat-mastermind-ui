@@ -13,7 +13,7 @@ export function SessionEnforcer() {
   useEffect(() => {
     if (status === "authenticated" && session?.user?.id) {
       console.log("🛡️ SessionEnforcer: Starting aggressive session monitoring");
-      
+
       // Check every 5 seconds - very aggressive
       checkIntervalRef.current = setInterval(() => {
         if (!isChecking) {
@@ -34,12 +34,12 @@ export function SessionEnforcer() {
 
   const checkSessionAggressively = async () => {
     if (!session?.user?.id || isChecking) return;
-    
+
     setIsChecking(true);
 
     try {
       console.log("🛡️ SessionEnforcer: Aggressive check starting...");
-      
+
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
 
@@ -49,24 +49,29 @@ export function SessionEnforcer() {
           "Content-Type": "application/json",
         },
         signal: controller.signal,
-        credentials: 'same-origin',
+        credentials: "same-origin",
       });
 
       clearTimeout(timeoutId);
 
       if (response.ok) {
         const result = await response.json();
-        
+
         if (!result.isValid && wasValidRef.current) {
           // Session was valid before but now it's not - immediate action
-          console.log("🚫 SessionEnforcer: Session terminated! Forcing logout...");
+          console.log(
+            "🚫 SessionEnforcer: Session terminated! Forcing logout..."
+          );
           wasValidRef.current = false;
-          
+
           // Show immediate toast
-          toast.error("Your session has been terminated by an administrator or due to multiple logins. Redirecting to login...", {
-            duration: 10000,
-            position: "top-center"
-          });
+          toast.error(
+            "Your session has been terminated by an administrator or due to multiple logins. Redirecting to login...",
+            {
+              duration: 10000,
+              position: "top-center",
+            }
+          );
 
           // Clear all storage immediately
           if (typeof window !== "undefined") {
@@ -77,18 +82,17 @@ export function SessionEnforcer() {
           // Force logout after 2 seconds
           setTimeout(async () => {
             try {
-              await signOut({ 
+              await signOut({
                 callbackUrl: "/auth/signin?message=session-terminated",
-                redirect: false 
+                redirect: false,
               });
             } catch (error) {
               console.error("Error during signOut:", error);
             }
-            
+
             // Force redirect regardless
             window.location.replace("/auth/signin?message=session-terminated");
           }, 2000);
-          
         } else if (result.isValid) {
           wasValidRef.current = true;
           console.log("✅ SessionEnforcer: Session is valid");
@@ -101,7 +105,7 @@ export function SessionEnforcer() {
         }
       }
     } catch (error) {
-      if (error instanceof Error && error.name === 'AbortError') {
+      if (error instanceof Error && error.name === "AbortError") {
         console.log("⚠️ SessionEnforcer: Request timeout");
       } else {
         console.error("❌ SessionEnforcer: Error:", error);
@@ -113,10 +117,10 @@ export function SessionEnforcer() {
 
   const forceLogout = async (reason: string) => {
     console.log("🚫 SessionEnforcer: Force logout -", reason);
-    
+
     toast.error(`Session terminated: ${reason}. Redirecting...`, {
       duration: 5000,
-      position: "top-center"
+      position: "top-center",
     });
 
     if (typeof window !== "undefined") {

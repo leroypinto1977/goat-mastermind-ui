@@ -6,23 +6,29 @@ import { DeviceTracker } from "@/lib/device-tracker";
 export async function GET(request: NextRequest) {
   try {
     const session = await auth();
-    
+
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     // Get device info from request
     const userAgent = request.headers.get("user-agent") || "Unknown";
-    const ipAddress = 
+    const ipAddress =
       request.headers.get("x-forwarded-for") ||
       request.headers.get("x-real-ip") ||
       "Unknown";
 
     // Update device activity
-    await DeviceTracker.updateDeviceActivity(session.user.id, ipAddress, userAgent);
+    await DeviceTracker.updateDeviceActivity(
+      session.user.id,
+      ipAddress,
+      userAgent
+    );
 
     // Check for active devices
-    const activeDevicesCount = await DeviceTracker.getActiveDevicesCount(session.user.id);
+    const activeDevicesCount = await DeviceTracker.getActiveDevicesCount(
+      session.user.id
+    );
 
     return NextResponse.json({
       success: true,
@@ -43,19 +49,23 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const session = await auth();
-    
+
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const terminatedCount = await DeviceTracker.enforceSessionLimit(session.user.id, 1);
+    const terminatedCount = await DeviceTracker.enforceSessionLimit(
+      session.user.id,
+      1
+    );
 
     return NextResponse.json({
       success: true,
       terminatedSessions: terminatedCount,
-      message: terminatedCount > 0 
-        ? `${terminatedCount} previous session(s) terminated due to session limit`
-        : "No sessions needed termination",
+      message:
+        terminatedCount > 0
+          ? `${terminatedCount} previous session(s) terminated due to session limit`
+          : "No sessions needed termination",
     });
   } catch (error) {
     console.error("Error enforcing session limit:", error);

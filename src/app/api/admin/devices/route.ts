@@ -31,7 +31,7 @@ export async function GET() {
     });
 
     // Format devices for admin display
-    const formattedDevices = devices.map(device => ({
+    const formattedDevices = devices.map((device) => ({
       id: device.id,
       deviceName: device.deviceName || "Unknown Device",
       deviceType: device.deviceType || "desktop",
@@ -51,14 +51,14 @@ export async function GET() {
       fingerprint: device.fingerprint.substring(0, 8) + "...", // Truncate for display
     }));
 
-    return NextResponse.json({ 
+    return NextResponse.json({
       devices: formattedDevices,
       summary: {
         total: devices.length,
-        active: devices.filter(d => d.isActive).length,
-        inactive: devices.filter(d => !d.isActive).length,
-        uniqueUsers: new Set(devices.map(d => d.userId)).size,
-      }
+        active: devices.filter((d) => d.isActive).length,
+        inactive: devices.filter((d) => !d.isActive).length,
+        uniqueUsers: new Set(devices.map((d) => d.userId)).size,
+      },
     });
   } catch (error) {
     console.error("Error fetching devices:", error);
@@ -92,15 +92,12 @@ export async function DELETE(request: NextRequest) {
     const device = await prisma.device.findUnique({
       where: { id: deviceId },
       include: {
-        user: { select: { email: true, name: true } }
-      }
+        user: { select: { email: true, name: true } },
+      },
     });
 
     if (!device) {
-      return NextResponse.json(
-        { error: "Device not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Device not found" }, { status: 404 });
     }
 
     // Deactivate the device
@@ -137,14 +134,14 @@ export async function DELETE(request: NextRequest) {
       },
     });
 
-    return NextResponse.json({ 
+    return NextResponse.json({
       success: true,
       message: `Device terminated for user ${device.user.email}`,
       device: {
         id: deviceId,
         deviceName: device.deviceName,
         user: device.user.email,
-      }
+      },
     });
   } catch (error) {
     console.error("Error terminating device:", error);

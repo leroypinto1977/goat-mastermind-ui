@@ -14,13 +14,7 @@ import {
 } from "@/components/ui/card";
 import { GoatLogo } from "@/components/goat-logo";
 import { ThemeToggle } from "@/components/theme-toggle";
-import {
-  ArrowLeft,
-  Shield,
-  Loader2,
-  Clock,
-  Mail,
-} from "lucide-react";
+import { ArrowLeft, Shield, Loader2, Clock, Mail } from "lucide-react";
 import { toast } from "sonner";
 
 function VerifyResetCodeForm() {

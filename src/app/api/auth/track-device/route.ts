@@ -6,20 +6,23 @@ import { auth } from "@/lib/auth";
 export async function POST(request: NextRequest) {
   try {
     const session = await auth();
-    
+
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     // Get device information from request headers
     const userAgent = request.headers.get("user-agent") || "Unknown";
-    const ipAddress = 
+    const ipAddress =
       request.headers.get("x-forwarded-for") ||
       request.headers.get("x-real-ip") ||
       "Unknown";
 
     console.log("🔍 Tracking device for user:", session.user.email);
-    console.log("📱 Device info:", { userAgent: userAgent.substring(0, 50) + "...", ipAddress });
+    console.log("📱 Device info:", {
+      userAgent: userAgent.substring(0, 50) + "...",
+      ipAddress,
+    });
 
     // Track the device and enforce session limits
     const deviceId = await DeviceTracker.trackDevice(session.user.id, {
@@ -38,9 +41,9 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error("❌ Error tracking device:", error);
     return NextResponse.json(
-      { 
+      {
         error: "Failed to track device",
-        details: error instanceof Error ? error.message : "Unknown error"
+        details: error instanceof Error ? error.message : "Unknown error",
       },
       { status: 500 }
     );

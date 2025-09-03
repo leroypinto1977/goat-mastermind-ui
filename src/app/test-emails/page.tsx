@@ -1,37 +1,39 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { toast } from 'sonner';
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { toast } from "sonner";
 
 export default function EmailTestPage() {
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
 
   const testPasswordResetEmail = async () => {
     if (!email) {
-      toast.error('Please enter an email address');
+      toast.error("Please enter an email address");
       return;
     }
 
     setLoading(true);
     try {
-      const response = await fetch('/api/auth/forgot-password', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/auth/forgot-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email }),
       });
 
       const data = await response.json();
 
       if (response.ok) {
-        toast.success('Password reset email sent! Check your console for the code.');
+        toast.success(
+          "Password reset email sent! Check your console for the code."
+        );
       } else {
-        toast.error(data.error || 'Failed to send email');
+        toast.error(data.error || "Failed to send email");
       }
     } catch (error) {
-      toast.error('Error sending email');
+      toast.error("Error sending email");
       console.error(error);
     } finally {
       setLoading(false);
@@ -40,31 +42,31 @@ export default function EmailTestPage() {
 
   const testWelcomeEmail = async () => {
     if (!email) {
-      toast.error('Please enter an email address');
+      toast.error("Please enter an email address");
       return;
     }
 
     setLoading(true);
     try {
       // Test the welcome email through user creation
-      const response = await fetch('/api/test/welcome-email', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
+      const response = await fetch("/api/test/welcome-email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
           email,
-          name: 'Test User',
+          name: "Test User",
         }),
       });
 
       const data = await response.json();
 
       if (response.ok) {
-        toast.success('Welcome email sent! Check your console or email.');
+        toast.success("Welcome email sent! Check your console or email.");
       } else {
-        toast.error(data.error || 'Failed to send email');
+        toast.error(data.error || "Failed to send email");
       }
     } catch (error) {
-      toast.error('Error sending email');
+      toast.error("Error sending email");
       console.error(error);
     } finally {
       setLoading(false);
@@ -101,13 +103,13 @@ export default function EmailTestPage() {
                   onChange={(e) => setEmail(e.target.value)}
                 />
               </div>
-              
-              <Button 
+
+              <Button
                 onClick={testPasswordResetEmail}
                 disabled={loading}
                 className="w-full"
               >
-                {loading ? 'Sending...' : 'Send Password Reset Email'}
+                {loading ? "Sending..." : "Send Password Reset Email"}
               </Button>
 
               <div className="bg-blue-50 p-4 rounded-lg">
@@ -140,14 +142,14 @@ export default function EmailTestPage() {
                   onChange={(e) => setEmail(e.target.value)}
                 />
               </div>
-              
-              <Button 
+
+              <Button
                 onClick={testWelcomeEmail}
                 disabled={loading}
                 className="w-full"
                 variant="outline"
               >
-                {loading ? 'Sending...' : 'Send Welcome Email'}
+                {loading ? "Sending..." : "Send Welcome Email"}
               </Button>
 
               <div className="bg-green-50 p-4 rounded-lg">
@@ -171,32 +173,52 @@ export default function EmailTestPage() {
           </h2>
           <div className="space-y-4">
             <div className="bg-yellow-50 border border-yellow-200 p-4 rounded-lg">
-              <h4 className="font-semibold text-yellow-900 mb-2">Current Status:</h4>
+              <h4 className="font-semibold text-yellow-900 mb-2">
+                Current Status:
+              </h4>
               <p className="text-yellow-800">
                 {process.env.RESEND_API_KEY ? (
-                  <span className="text-green-600">✅ Resend API configured - emails will be sent</span>
+                  <span className="text-green-600">
+                    ✅ Resend API configured - emails will be sent
+                  </span>
                 ) : (
-                  <span className="text-orange-600">⚠️ No Resend API key - emails will be simulated (logged to console)</span>
+                  <span className="text-orange-600">
+                    ⚠️ No Resend API key - emails will be simulated (logged to
+                    console)
+                  </span>
                 )}
               </p>
             </div>
 
             <div className="grid md:grid-cols-2 gap-4">
               <div className="bg-gray-50 p-4 rounded-lg">
-                <h4 className="font-semibold text-gray-900 mb-2">To Enable Real Emails:</h4>
+                <h4 className="font-semibold text-gray-900 mb-2">
+                  To Enable Real Emails:
+                </h4>
                 <ol className="text-sm text-gray-700 space-y-1 list-decimal list-inside">
-                  <li>Sign up at <a href="https://resend.com" className="text-blue-600 underline">resend.com</a></li>
+                  <li>
+                    Sign up at{" "}
+                    <a
+                      href="https://resend.com"
+                      className="text-blue-600 underline"
+                    >
+                      resend.com
+                    </a>
+                  </li>
                   <li>Get your API key</li>
                   <li>Add to .env.local:</li>
                 </ol>
                 <code className="block bg-gray-800 text-green-400 p-2 rounded mt-2 text-xs">
-                  RESEND_API_KEY="re_your_key_here"<br/>
+                  RESEND_API_KEY="re_your_key_here"
+                  <br />
                   RESEND_FROM_EMAIL="GOAT &lt;noreply@yourdomain.com&gt;"
                 </code>
               </div>
 
               <div className="bg-gray-50 p-4 rounded-lg">
-                <h4 className="font-semibold text-gray-900 mb-2">Template Technology:</h4>
+                <h4 className="font-semibold text-gray-900 mb-2">
+                  Template Technology:
+                </h4>
                 <ul className="text-sm text-gray-700 space-y-1">
                   <li>🎨 React Email components</li>
                   <li>📱 Responsive design</li>

@@ -21,10 +21,10 @@ export function SessionLimitNotification() {
     if (status === "authenticated" && session?.user?.id) {
       // Check if we should show the session limit notification
       checkForSessionNotification();
-      
+
       // Check session status periodically
       const interval = setInterval(checkForSessionNotification, 30000);
-      
+
       return () => clearInterval(interval);
     }
   }, [session, status]);
@@ -34,7 +34,7 @@ export function SessionLimitNotification() {
       // Check if notification was already shown for this session
       const notificationKey = `sessionNotification_${session?.user?.id}`;
       const alreadyShown = localStorage.getItem(notificationKey);
-      
+
       if (alreadyShown) {
         return;
       }
@@ -42,16 +42,17 @@ export function SessionLimitNotification() {
       // Show notification about session enforcement
       setNotification({
         show: true,
-        message: "Session security active: Only one device can be logged in at a time. Any previous sessions have been automatically terminated for your security.",
+        message:
+          "Session security active: Only one device can be logged in at a time. Any previous sessions have been automatically terminated for your security.",
         type: "info",
       });
-      
+
       // Mark as shown for this session
       localStorage.setItem(notificationKey, "true");
-      
+
       // Auto-hide after 8 seconds
       setTimeout(() => {
-        setNotification(prev => ({ ...prev, show: false }));
+        setNotification((prev) => ({ ...prev, show: false }));
       }, 8000);
     } catch (error) {
       console.error("Error checking session notification:", error);
@@ -59,7 +60,7 @@ export function SessionLimitNotification() {
   };
 
   const dismissNotification = () => {
-    setNotification(prev => ({ ...prev, show: false }));
+    setNotification((prev) => ({ ...prev, show: false }));
   };
 
   if (!notification.show) return null;
@@ -71,8 +72,8 @@ export function SessionLimitNotification() {
           notification.type === "info"
             ? "border-blue-200 bg-blue-50/90 text-blue-800 dark:border-blue-800 dark:bg-blue-950/90 dark:text-blue-200"
             : notification.type === "warning"
-            ? "border-orange-200 bg-orange-50/90 text-orange-800 dark:border-orange-800 dark:bg-orange-950/90 dark:text-orange-200"
-            : "border-green-200 bg-green-50/90 text-green-800 dark:border-green-800 dark:bg-green-950/90 dark:text-green-200"
+              ? "border-orange-200 bg-orange-50/90 text-orange-800 dark:border-orange-800 dark:bg-orange-950/90 dark:text-orange-200"
+              : "border-green-200 bg-green-50/90 text-green-800 dark:border-green-800 dark:bg-green-950/90 dark:text-green-200"
         }`}
       >
         <div className="flex items-start gap-3">
@@ -112,7 +113,12 @@ export function SessionLimitNotification() {
             onClick={dismissNotification}
             className="flex-shrink-0 rounded-md p-1.5 hover:bg-black/5 dark:hover:bg-white/5"
           >
-            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg
+              className="h-4 w-4"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"

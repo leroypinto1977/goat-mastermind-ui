@@ -116,14 +116,14 @@ function SignInForm() {
           </Button>
 
           <div className="text-center">
-            <Link 
+            <Link
               href="/auth/forgot-password"
               className="text-sm text-primary hover:text-primary/80 transition-colors underline-offset-4 hover:underline"
             >
               Forgot your password?
             </Link>
           </div>
-          
+
           <div className="text-center text-sm text-muted-foreground mt-4 pt-4 border-t border-border">
             If you don't have your credentials please contact the support team
           </div>
@@ -143,16 +143,18 @@ export default function SignIn() {
         <ThemeToggle />
       </div>
 
-      <Suspense fallback={
-        <Card className="w-full max-w-md">
-          <CardHeader className="text-center">
-            <CardTitle className="text-2xl font-bold">
-              Welcome to GOAT Mastermind
-            </CardTitle>
-            <CardDescription>Loading...</CardDescription>
-          </CardHeader>
-        </Card>
-      }>
+      <Suspense
+        fallback={
+          <Card className="w-full max-w-md">
+            <CardHeader className="text-center">
+              <CardTitle className="text-2xl font-bold">
+                Welcome to GOAT Mastermind
+              </CardTitle>
+              <CardDescription>Loading...</CardDescription>
+            </CardHeader>
+          </Card>
+        }
+      >
         <SignInForm />
       </Suspense>
     </div>

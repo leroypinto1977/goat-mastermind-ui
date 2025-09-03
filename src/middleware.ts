@@ -5,9 +5,9 @@ import { getToken } from "next-auth/jwt";
 export async function middleware(req: NextRequest) {
   try {
     // Get the user session token
-    const token = await getToken({ 
-      req, 
-      secret: process.env.NEXTAUTH_SECRET 
+    const token = await getToken({
+      req,
+      secret: process.env.NEXTAUTH_SECRET,
     });
 
     // If user is authenticated, we can track activity here

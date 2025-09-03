@@ -21,17 +21,18 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "GOAT Mastermind - AI Agent Hub",
-  description: "The Greatest AI Agent Platform - Create, collaborate, and conquer with powerful AI agents",
+  description:
+    "The Greatest AI Agent Platform - Create, collaborate, and conquer with powerful AI agents",
   manifest: "/manifest.json",
   themeColor: "#b87333",
   icons: {
     icon: [
-      { url: '/favicon-16x16.svg', type: 'image/svg+xml', sizes: '16x16' },
-      { url: '/favicon.svg', type: 'image/svg+xml', sizes: '32x32' },
-      { url: '/goat-logo.svg', type: 'image/svg+xml', sizes: '64x64' }
+      { url: "/favicon-16x16.svg", type: "image/svg+xml", sizes: "16x16" },
+      { url: "/favicon.svg", type: "image/svg+xml", sizes: "32x32" },
+      { url: "/goat-logo.svg", type: "image/svg+xml", sizes: "64x64" },
     ],
-    shortcut: '/favicon.svg',
-    apple: '/goat-logo.svg',
+    shortcut: "/favicon.svg",
+    apple: "/goat-logo.svg",
   },
 };
 
@@ -57,11 +58,7 @@ export default function RootLayout({
             <SessionEnforcer />
             {children}
             <SessionLimitNotification />
-            <Toaster 
-              position="top-right"
-              richColors
-              closeButton
-            />
+            <Toaster position="top-right" richColors closeButton />
           </ThemeProvider>
         </SessionProvider>
       </body>

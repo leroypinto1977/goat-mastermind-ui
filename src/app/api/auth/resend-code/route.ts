@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
-import { EmailService } from '@/lib/email-service';
+import { NextRequest, NextResponse } from "next/server";
+import { PrismaClient } from "@prisma/client";
+import { EmailService } from "@/lib/email-service";
 
 const prisma = new PrismaClient();
 
@@ -9,20 +9,17 @@ export async function POST(request: NextRequest) {
     const { email } = await request.json();
 
     if (!email) {
-      return NextResponse.json(
-        { error: 'Email is required' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Email is required" }, { status: 400 });
     }
 
     // Check if user exists
-    const user = await prisma.user.findUnique({
+    const user = (await prisma.user.findUnique({
       where: { email: email.toLowerCase() },
-    }) as any;
+    })) as any;
 
     if (!user) {
       return NextResponse.json(
-        { error: 'UserID does not exist' },
+        { error: "UserID does not exist" },
         { status: 404 }
       );
     }
@@ -30,7 +27,7 @@ export async function POST(request: NextRequest) {
     // Check reset attempts (max 2 resends = 3 total attempts)
     if (user.resetAttempts && user.resetAttempts >= 2) {
       return NextResponse.json(
-        { error: 'Maximum resend attempts reached. Please try again later.' },
+        { error: "Maximum resend attempts reached. Please try again later." },
         { status: 429 }
       );
     }
@@ -57,19 +54,18 @@ export async function POST(request: NextRequest) {
     );
 
     if (!emailSent) {
-      console.error('Failed to send password reset email');
+      console.error("Failed to send password reset email");
       // Don't return error to avoid leaking user existence
     }
 
     return NextResponse.json(
-      { message: 'Reset code resent successfully' },
+      { message: "Reset code resent successfully" },
       { status: 200 }
     );
-
   } catch (error) {
-    console.error('Resend code error:', error);
+    console.error("Resend code error:", error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: "Internal server error" },
       { status: 500 }
     );
   }

@@ -13,10 +13,12 @@ export interface DeviceInfo {
 }
 
 export class DeviceTracker {
-  static parseUserAgent(userAgent: string): Pick<DeviceInfo, 'deviceName' | 'deviceType' | 'browser' | 'os'> {
+  static parseUserAgent(
+    userAgent: string
+  ): Pick<DeviceInfo, "deviceName" | "deviceType" | "browser" | "os"> {
     const parser = new UAParser(userAgent);
     const result = parser.getResult();
-    
+
     return {
       deviceName: result.device.model || `${result.os.name} Device`,
       deviceType: result.device.type || this.getDeviceType(userAgent),
@@ -27,13 +29,17 @@ export class DeviceTracker {
 
   static getDeviceType(userAgent: string): string {
     const ua = userAgent.toLowerCase();
-    if (ua.includes('mobile') || ua.includes('android') || ua.includes('iphone')) {
-      return 'mobile';
+    if (
+      ua.includes("mobile") ||
+      ua.includes("android") ||
+      ua.includes("iphone")
+    ) {
+      return "mobile";
     }
-    if (ua.includes('tablet') || ua.includes('ipad')) {
-      return 'tablet';
+    if (ua.includes("tablet") || ua.includes("ipad")) {
+      return "tablet";
     }
-    return 'desktop';
+    return "desktop";
   }
 
   static generateFingerprint(deviceInfo: DeviceInfo): string {
@@ -41,25 +47,27 @@ export class DeviceTracker {
     // This will treat different Chrome instances on the same device as the same device
     const components = [
       deviceInfo.ipAddress,
-      deviceInfo.browser?.split(' ')[0], // Just browser name, not version
-      deviceInfo.os?.split(' ')[0], // Just OS name, not version
+      deviceInfo.browser?.split(" ")[0], // Just browser name, not version
+      deviceInfo.os?.split(" ")[0], // Just OS name, not version
     ].filter(Boolean);
-    
-    return Buffer.from(components.join('|')).toString('base64');
+
+    return Buffer.from(components.join("|")).toString("base64");
   }
 
   static generateSessionFingerprint(deviceInfo: DeviceInfo): string {
     // For session-specific tracking, use the full user agent
     // This will differentiate between browser instances
-    const components = [
-      deviceInfo.userAgent,
-      deviceInfo.ipAddress,
-    ].filter(Boolean);
-    
-    return Buffer.from(components.join('|')).toString('base64');
+    const components = [deviceInfo.userAgent, deviceInfo.ipAddress].filter(
+      Boolean
+    );
+
+    return Buffer.from(components.join("|")).toString("base64");
   }
 
-  static async trackDevice(userId: string, deviceInfo: DeviceInfo): Promise<string> {
+  static async trackDevice(
+    userId: string,
+    deviceInfo: DeviceInfo
+  ): Promise<string> {
     try {
       console.log("📱 Starting device tracking for user:", userId);
       console.log("🔍 Device info:", deviceInfo);
@@ -68,8 +76,14 @@ export class DeviceTracker {
       const sessionFingerprint = this.generateSessionFingerprint(deviceInfo);
       const parsedInfo = this.parseUserAgent(deviceInfo.userAgent);
 
-      console.log("🔑 Generated device fingerprint:", fingerprint.substring(0, 10) + "...");
-      console.log("🔑 Generated session fingerprint:", sessionFingerprint.substring(0, 10) + "...");
+      console.log(
+        "🔑 Generated device fingerprint:",
+        fingerprint.substring(0, 10) + "..."
+      );
+      console.log(
+        "🔑 Generated session fingerprint:",
+        sessionFingerprint.substring(0, 10) + "..."
+      );
       console.log("📋 Parsed device info:", parsedInfo);
 
       // First, enforce single session rule - deactivate all existing devices for this user
@@ -85,7 +99,9 @@ export class DeviceTracker {
         },
       });
 
-      console.log(`🔒 Deactivated ${deactivatedDevices.count} existing devices for user ${userId}`);
+      console.log(
+        `🔒 Deactivated ${deactivatedDevices.count} existing devices for user ${userId}`
+      );
 
       // Create or update the current device using session-specific fingerprint
       // This ensures each browser instance gets its own record but only one can be active
@@ -113,7 +129,7 @@ export class DeviceTracker {
       await prisma.auditLog.create({
         data: {
           userId,
-          action: 'DEVICE_LOGIN',
+          action: "DEVICE_LOGIN",
           details: {
             deviceId: device.id,
             deviceInfo: parsedInfo,
@@ -127,15 +143,21 @@ export class DeviceTracker {
         },
       });
 
-      console.log(`🎯 Device tracking completed. Active device: ${device.id}, Terminated: ${deactivatedDevices.count}`);
+      console.log(
+        `🎯 Device tracking completed. Active device: ${device.id}, Terminated: ${deactivatedDevices.count}`
+      );
       return device.id;
     } catch (error) {
-      console.error('❌ Error tracking device:', error);
+      console.error("❌ Error tracking device:", error);
       throw error;
     }
   }
 
-  static async updateDeviceActivity(userId: string, ipAddress?: string, userAgent?: string): Promise<void> {
+  static async updateDeviceActivity(
+    userId: string,
+    ipAddress?: string,
+    userAgent?: string
+  ): Promise<void> {
     try {
       if (!userAgent) return;
 
@@ -156,11 +178,14 @@ export class DeviceTracker {
         },
       });
     } catch (error) {
-      console.error('Error updating device activity:', error);
+      console.error("Error updating device activity:", error);
     }
   }
 
-  static async terminateDevice(deviceId: string, reason = 'Manual termination'): Promise<boolean> {
+  static async terminateDevice(
+    deviceId: string,
+    reason = "Manual termination"
+  ): Promise<boolean> {
     try {
       const device = await prisma.device.findUnique({
         where: { id: deviceId },
@@ -180,7 +205,7 @@ export class DeviceTracker {
       await prisma.auditLog.create({
         data: {
           userId: device.userId,
-          action: 'DEVICE_TERMINATED',
+          action: "DEVICE_TERMINATED",
           details: {
             deviceId,
             reason,
@@ -190,15 +215,20 @@ export class DeviceTracker {
         },
       });
 
-      console.log(`Device ${deviceId} terminated for user ${device.user.email}`);
+      console.log(
+        `Device ${deviceId} terminated for user ${device.user.email}`
+      );
       return true;
     } catch (error) {
-      console.error('Error terminating device:', error);
+      console.error("Error terminating device:", error);
       return false;
     }
   }
 
-  static async enforceSessionLimit(userId: string, maxSessions = 1): Promise<number> {
+  static async enforceSessionLimit(
+    userId: string,
+    maxSessions = 1
+  ): Promise<number> {
     try {
       const activeDevices = await prisma.device.findMany({
         where: {
@@ -206,7 +236,7 @@ export class DeviceTracker {
           isActive: true,
         },
         orderBy: {
-          lastActive: 'desc',
+          lastActive: "desc",
         },
       });
 
@@ -216,16 +246,16 @@ export class DeviceTracker {
 
       // Keep the most recent sessions, terminate the rest
       const devicesToTerminate = activeDevices.slice(maxSessions);
-      
+
       await Promise.all(
-        devicesToTerminate.map(device =>
-          this.terminateDevice(device.id, 'Session limit exceeded')
+        devicesToTerminate.map((device) =>
+          this.terminateDevice(device.id, "Session limit exceeded")
         )
       );
 
       return devicesToTerminate.length;
     } catch (error) {
-      console.error('Error enforcing session limit:', error);
+      console.error("Error enforcing session limit:", error);
       return 0;
     }
   }
@@ -239,7 +269,7 @@ export class DeviceTracker {
         },
       });
     } catch (error) {
-      console.error('Error getting active devices count:', error);
+      console.error("Error getting active devices count:", error);
       return 0;
     }
   }

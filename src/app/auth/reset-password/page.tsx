@@ -5,14 +5,26 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { signOut } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { GoatLogo } from "@/components/goat-logo";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Eye, EyeOff, Lock, Loader2, CheckCircle } from "lucide-react";
 import { toast } from "sonner";
 
 // Success Modal Component
-function PasswordResetSuccessModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
+function PasswordResetSuccessModal({
+  isOpen,
+  onClose,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+}) {
   useEffect(() => {
     if (isOpen) {
       const timer = setTimeout(() => {
@@ -36,10 +48,14 @@ function PasswordResetSuccessModal({ isOpen, onClose }: { isOpen: boolean; onClo
             Password Reset Successful!
           </h2>
           <p className="text-muted-foreground">
-            Your password has been updated. You will be redirected to the sign-in page.
+            Your password has been updated. You will be redirected to the
+            sign-in page.
           </p>
           <div className="w-full bg-muted rounded-full h-1">
-            <div className="bg-green-500 h-1 rounded-full animate-pulse" style={{ width: '100%' }}></div>
+            <div
+              className="bg-green-500 h-1 rounded-full animate-pulse"
+              style={{ width: "100%" }}
+            ></div>
           </div>
         </div>
       </div>
@@ -56,7 +72,7 @@ function ResetPasswordForm() {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const searchParams = useSearchParams();
   const router = useRouter();
-  
+
   const email = searchParams.get("email");
   const token = searchParams.get("token");
 
@@ -79,27 +95,34 @@ function ResetPasswordForm() {
       hasLowerCase,
       hasNumbers,
       hasSpecialChar,
-      isValid: minLength && hasUpperCase && hasLowerCase && hasNumbers && hasSpecialChar
+      isValid:
+        minLength &&
+        hasUpperCase &&
+        hasLowerCase &&
+        hasNumbers &&
+        hasSpecialChar,
     };
   };
 
   const passwordValidation = validatePassword(newPassword);
-  const passwordsMatch = newPassword === confirmPassword && confirmPassword.length > 0;
+  const passwordsMatch =
+    newPassword === confirmPassword && confirmPassword.length > 0;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email || !token || !passwordValidation.isValid || !passwordsMatch) return;
-    
+    if (!email || !token || !passwordValidation.isValid || !passwordsMatch)
+      return;
+
     setLoading(true);
 
     try {
       const response = await fetch("/api/auth/reset-password", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          email, 
-          verificationToken: token, 
-          newPassword 
+        body: JSON.stringify({
+          email,
+          verificationToken: token,
+          newPassword,
         }),
       });
 
@@ -112,7 +135,6 @@ function ResetPasswordForm() {
 
       // Show success modal
       setShowSuccessModal(true);
-      
     } catch (error) {
       toast.error("Network error. Please try again.");
       console.error("Reset password error:", error);
@@ -125,7 +147,12 @@ function ResetPasswordForm() {
     setShowSuccessModal(false);
     // Sign out any existing session and redirect to sign in
     await signOut({ redirect: false });
-    router.push("/auth/signin?message=" + encodeURIComponent("Password reset successfully! Please sign in with your new password."));
+    router.push(
+      "/auth/signin?message=" +
+        encodeURIComponent(
+          "Password reset successfully! Please sign in with your new password."
+        )
+    );
   };
 
   if (!email || !token) {
@@ -140,11 +167,9 @@ function ResetPasswordForm() {
             <Lock className="h-6 w-6 text-primary" />
             Reset Password
           </CardTitle>
-          <CardDescription>
-            Enter your new password for {email}
-          </CardDescription>
+          <CardDescription>Enter your new password for {email}</CardDescription>
         </CardHeader>
-        
+
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
@@ -167,31 +192,55 @@ function ResetPasswordForm() {
                   className="absolute inset-y-0 right-0 pr-3 flex items-center transition-all duration-200 hover:scale-110 active:scale-95 text-gray-400 hover:text-gray-600"
                   onClick={() => setShowNewPassword(!showNewPassword)}
                 >
-                  {showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  {showNewPassword ? (
+                    <EyeOff className="h-4 w-4" />
+                  ) : (
+                    <Eye className="h-4 w-4" />
+                  )}
                 </button>
               </div>
 
               {/* Password Requirements */}
               {newPassword && (
                 <div className="text-xs space-y-1 mt-2">
-                  <div className={`flex items-center gap-1 ${passwordValidation.minLength ? 'text-green-600' : 'text-muted-foreground'}`}>
-                    <CheckCircle className={`h-3 w-3 ${passwordValidation.minLength ? 'text-green-600' : 'text-muted-foreground'}`} />
+                  <div
+                    className={`flex items-center gap-1 ${passwordValidation.minLength ? "text-green-600" : "text-muted-foreground"}`}
+                  >
+                    <CheckCircle
+                      className={`h-3 w-3 ${passwordValidation.minLength ? "text-green-600" : "text-muted-foreground"}`}
+                    />
                     At least 8 characters
                   </div>
-                  <div className={`flex items-center gap-1 ${passwordValidation.hasUpperCase ? 'text-green-600' : 'text-muted-foreground'}`}>
-                    <CheckCircle className={`h-3 w-3 ${passwordValidation.hasUpperCase ? 'text-green-600' : 'text-muted-foreground'}`} />
+                  <div
+                    className={`flex items-center gap-1 ${passwordValidation.hasUpperCase ? "text-green-600" : "text-muted-foreground"}`}
+                  >
+                    <CheckCircle
+                      className={`h-3 w-3 ${passwordValidation.hasUpperCase ? "text-green-600" : "text-muted-foreground"}`}
+                    />
                     One uppercase letter
                   </div>
-                  <div className={`flex items-center gap-1 ${passwordValidation.hasLowerCase ? 'text-green-600' : 'text-muted-foreground'}`}>
-                    <CheckCircle className={`h-3 w-3 ${passwordValidation.hasLowerCase ? 'text-green-600' : 'text-muted-foreground'}`} />
+                  <div
+                    className={`flex items-center gap-1 ${passwordValidation.hasLowerCase ? "text-green-600" : "text-muted-foreground"}`}
+                  >
+                    <CheckCircle
+                      className={`h-3 w-3 ${passwordValidation.hasLowerCase ? "text-green-600" : "text-muted-foreground"}`}
+                    />
                     One lowercase letter
                   </div>
-                  <div className={`flex items-center gap-1 ${passwordValidation.hasNumbers ? 'text-green-600' : 'text-muted-foreground'}`}>
-                    <CheckCircle className={`h-3 w-3 ${passwordValidation.hasNumbers ? 'text-green-600' : 'text-muted-foreground'}`} />
+                  <div
+                    className={`flex items-center gap-1 ${passwordValidation.hasNumbers ? "text-green-600" : "text-muted-foreground"}`}
+                  >
+                    <CheckCircle
+                      className={`h-3 w-3 ${passwordValidation.hasNumbers ? "text-green-600" : "text-muted-foreground"}`}
+                    />
                     One number
                   </div>
-                  <div className={`flex items-center gap-1 ${passwordValidation.hasSpecialChar ? 'text-green-600' : 'text-muted-foreground'}`}>
-                    <CheckCircle className={`h-3 w-3 ${passwordValidation.hasSpecialChar ? 'text-green-600' : 'text-muted-foreground'}`} />
+                  <div
+                    className={`flex items-center gap-1 ${passwordValidation.hasSpecialChar ? "text-green-600" : "text-muted-foreground"}`}
+                  >
+                    <CheckCircle
+                      className={`h-3 w-3 ${passwordValidation.hasSpecialChar ? "text-green-600" : "text-muted-foreground"}`}
+                    />
                     One special character
                   </div>
                 </div>
@@ -218,22 +267,34 @@ function ResetPasswordForm() {
                   className="absolute inset-y-0 right-0 pr-3 flex items-center transition-all duration-200 hover:scale-110 active:scale-95 text-gray-400 hover:text-gray-600"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                 >
-                  {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  {showConfirmPassword ? (
+                    <EyeOff className="h-4 w-4" />
+                  ) : (
+                    <Eye className="h-4 w-4" />
+                  )}
                 </button>
               </div>
 
               {confirmPassword && (
-                <div className={`text-xs flex items-center gap-1 mt-1 ${passwordsMatch ? 'text-green-600' : 'text-destructive'}`}>
-                  <CheckCircle className={`h-3 w-3 ${passwordsMatch ? 'text-green-600' : 'text-destructive'}`} />
-                  {passwordsMatch ? 'Passwords match' : 'Passwords do not match'}
+                <div
+                  className={`text-xs flex items-center gap-1 mt-1 ${passwordsMatch ? "text-green-600" : "text-destructive"}`}
+                >
+                  <CheckCircle
+                    className={`h-3 w-3 ${passwordsMatch ? "text-green-600" : "text-destructive"}`}
+                  />
+                  {passwordsMatch
+                    ? "Passwords match"
+                    : "Passwords do not match"}
                 </div>
               )}
             </div>
 
-            <Button 
-              type="submit" 
-              className="w-full" 
-              disabled={loading || !passwordValidation.isValid || !passwordsMatch}
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={
+                loading || !passwordValidation.isValid || !passwordsMatch
+              }
             >
               {loading ? (
                 <>
@@ -248,7 +309,7 @@ function ResetPasswordForm() {
         </CardContent>
       </Card>
 
-      <PasswordResetSuccessModal 
+      <PasswordResetSuccessModal
         isOpen={showSuccessModal}
         onClose={handleSuccessModalClose}
       />
@@ -266,13 +327,15 @@ export default function ResetPassword() {
         <ThemeToggle />
       </div>
 
-      <Suspense fallback={
-        <Card className="w-full max-w-md">
-          <CardHeader className="text-center">
-            <CardTitle>Loading...</CardTitle>
-          </CardHeader>
-        </Card>
-      }>
+      <Suspense
+        fallback={
+          <Card className="w-full max-w-md">
+            <CardHeader className="text-center">
+              <CardTitle>Loading...</CardTitle>
+            </CardHeader>
+          </Card>
+        }
+      >
         <ResetPasswordForm />
       </Suspense>
     </div>

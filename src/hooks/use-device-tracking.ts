@@ -25,7 +25,7 @@ export function useDeviceTracking() {
   const trackDevice = async () => {
     try {
       console.log("🚀 Starting device tracking for:", session?.user?.email);
-      
+
       const response = await fetch("/api/auth/track-device", {
         method: "POST",
         headers: {

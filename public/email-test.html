@@ -1,183 +1,307 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Email Test - GOAT Mastermind</title>
     <style>
-        body { font-family: Arial, sans-serif; max-width: 600px; margin: 50px auto; padding: 20px; }
-        .test-section { margin: 20px 0; padding: 20px; border: 1px solid #ddd; border-radius: 8px; }
-        .success { background-color: #d4edda; border-color: #c3e6cb; color: #155724; }
-        .error { background-color: #f8d7da; border-color: #f5c6cb; color: #721c24; }
-        .info { background-color: #d1ecf1; border-color: #bee5eb; color: #0c5460; }
-        button { padding: 10px 20px; margin: 10px 5px; border: none; border-radius: 4px; cursor: pointer; }
-        .btn-primary { background-color: #007bff; color: white; }
-        .btn-success { background-color: #28a745; color: white; }
-        input { padding: 8px; margin: 5px; border: 1px solid #ddd; border-radius: 4px; width: 200px; }
-        .log { background: #f8f9fa; border: 1px solid #dee2e6; padding: 10px; border-radius: 4px; font-family: monospace; font-size: 12px; max-height: 200px; overflow-y: auto; }
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 600px;
+        margin: 50px auto;
+        padding: 20px;
+      }
+      .test-section {
+        margin: 20px 0;
+        padding: 20px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+      }
+      .success {
+        background-color: #d4edda;
+        border-color: #c3e6cb;
+        color: #155724;
+      }
+      .error {
+        background-color: #f8d7da;
+        border-color: #f5c6cb;
+        color: #721c24;
+      }
+      .info {
+        background-color: #d1ecf1;
+        border-color: #bee5eb;
+        color: #0c5460;
+      }
+      button {
+        padding: 10px 20px;
+        margin: 10px 5px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+      .btn-primary {
+        background-color: #007bff;
+        color: white;
+      }
+      .btn-success {
+        background-color: #28a745;
+        color: white;
+      }
+      input {
+        padding: 8px;
+        margin: 5px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        width: 200px;
+      }
+      .log {
+        background: #f8f9fa;
+        border: 1px solid #dee2e6;
+        padding: 10px;
+        border-radius: 4px;
+        font-family: monospace;
+        font-size: 12px;
+        max-height: 200px;
+        overflow-y: auto;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <h1>🐐 GOAT Mastermind - Email Test</h1>
-    
+
     <div class="test-section info">
-        <h2>📧 Email Service Test</h2>
-        <p>This page tests the forgot password email functionality. Since no real email service is configured yet, emails will be simulated and logged to the browser console.</p>
-        <p><strong>Current Configuration:</strong> Resend package installed, but RESEND_API_KEY not configured (emails will be simulated)</p>
+      <h2>📧 Email Service Test</h2>
+      <p>
+        This page tests the forgot password email functionality. Since no real
+        email service is configured yet, emails will be simulated and logged to
+        the browser console.
+      </p>
+      <p>
+        <strong>Current Configuration:</strong> Resend package installed, but
+        RESEND_API_KEY not configured (emails will be simulated)
+      </p>
     </div>
 
     <div class="test-section">
-        <h3>Test 1: Forgot Password Email</h3>
-        <input type="email" id="testEmail" placeholder="Enter test email" value="admin@goat.com">
-        <button class="btn-primary" onclick="testForgotPassword()">Send Reset Code</button>
-        <div id="forgotResult" class="log" style="margin-top: 10px; display: none;"></div>
+      <h3>Test 1: Forgot Password Email</h3>
+      <input
+        type="email"
+        id="testEmail"
+        placeholder="Enter test email"
+        value="admin@goat.com"
+      />
+      <button class="btn-primary" onclick="testForgotPassword()">
+        Send Reset Code
+      </button>
+      <div
+        id="forgotResult"
+        class="log"
+        style="margin-top: 10px; display: none"
+      ></div>
     </div>
 
     <div class="test-section">
-        <h3>Test 2: Verify Reset Code</h3>
-        <input type="email" id="verifyEmail" placeholder="Email" value="admin@goat.com">
-        <input type="text" id="verifyCode" placeholder="6-digit code" maxlength="6">
-        <button class="btn-primary" onclick="testVerifyCode()">Verify Code</button>
-        <div id="verifyResult" class="log" style="margin-top: 10px; display: none;"></div>
+      <h3>Test 2: Verify Reset Code</h3>
+      <input
+        type="email"
+        id="verifyEmail"
+        placeholder="Email"
+        value="admin@goat.com"
+      />
+      <input
+        type="text"
+        id="verifyCode"
+        placeholder="6-digit code"
+        maxlength="6"
+      />
+      <button class="btn-primary" onclick="testVerifyCode()">
+        Verify Code
+      </button>
+      <div
+        id="verifyResult"
+        class="log"
+        style="margin-top: 10px; display: none"
+      ></div>
     </div>
 
     <div class="test-section">
-        <h3>Test 3: Reset Password</h3>
-        <input type="email" id="resetEmail" placeholder="Email" value="admin@goat.com">
-        <input type="text" id="resetToken" placeholder="Verification token">
-        <input type="password" id="newPassword" placeholder="New password" value="newpassword123">
-        <button class="btn-primary" onclick="testResetPassword()">Reset Password</button>
-        <div id="resetResult" class="log" style="margin-top: 10px; display: none;"></div>
+      <h3>Test 3: Reset Password</h3>
+      <input
+        type="email"
+        id="resetEmail"
+        placeholder="Email"
+        value="admin@goat.com"
+      />
+      <input type="text" id="resetToken" placeholder="Verification token" />
+      <input
+        type="password"
+        id="newPassword"
+        placeholder="New password"
+        value="newpassword123"
+      />
+      <button class="btn-primary" onclick="testResetPassword()">
+        Reset Password
+      </button>
+      <div
+        id="resetResult"
+        class="log"
+        style="margin-top: 10px; display: none"
+      ></div>
     </div>
 
     <div class="test-section success">
-        <h3>🎯 Quick Test Instructions</h3>
-        <ol>
-            <li><strong>Step 1:</strong> Click "Send Reset Code" - Check browser console for the simulated email with 6-digit code</li>
-            <li><strong>Step 2:</strong> Copy the 6-digit code from console and paste it in "Verify Reset Code" section</li>
-            <li><strong>Step 3:</strong> Copy the verification token from the verify response and use it to reset the password</li>
-            <li><strong>Step 4:</strong> Check the results in each section</li>
-        </ol>
-        <p><strong>Console Logs:</strong> Open browser DevTools (F12) → Console tab to see simulated email content</p>
+      <h3>🎯 Quick Test Instructions</h3>
+      <ol>
+        <li>
+          <strong>Step 1:</strong> Click "Send Reset Code" - Check browser
+          console for the simulated email with 6-digit code
+        </li>
+        <li>
+          <strong>Step 2:</strong> Copy the 6-digit code from console and paste
+          it in "Verify Reset Code" section
+        </li>
+        <li>
+          <strong>Step 3:</strong> Copy the verification token from the verify
+          response and use it to reset the password
+        </li>
+        <li><strong>Step 4:</strong> Check the results in each section</li>
+      </ol>
+      <p>
+        <strong>Console Logs:</strong> Open browser DevTools (F12) → Console tab
+        to see simulated email content
+      </p>
     </div>
 
     <script>
-        async function testForgotPassword() {
-            const email = document.getElementById('testEmail').value;
-            const resultDiv = document.getElementById('forgotResult');
-            
-            if (!email) {
-                showResult(resultDiv, 'Please enter an email address', 'error');
-                return;
-            }
+      async function testForgotPassword() {
+        const email = document.getElementById("testEmail").value;
+        const resultDiv = document.getElementById("forgotResult");
 
-            try {
-                showResult(resultDiv, 'Sending request...', 'info');
-                
-                const response = await fetch('/api/auth/forgot-password', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ email: email }),
-                });
-
-                const data = await response.json();
-                
-                if (response.ok) {
-                    showResult(resultDiv, `✅ Success: ${data.message}\\n\\n📧 CHECK BROWSER CONSOLE for simulated email content with 6-digit code!`, 'success');
-                } else {
-                    showResult(resultDiv, `❌ Error: ${data.error}`, 'error');
-                }
-            } catch (error) {
-                showResult(resultDiv, `❌ Network Error: ${error.message}`, 'error');
-            }
+        if (!email) {
+          showResult(resultDiv, "Please enter an email address", "error");
+          return;
         }
 
-        async function testVerifyCode() {
-            const email = document.getElementById('verifyEmail').value;
-            const code = document.getElementById('verifyCode').value;
-            const resultDiv = document.getElementById('verifyResult');
-            
-            if (!email || !code) {
-                showResult(resultDiv, 'Please enter email and code', 'error');
-                return;
-            }
+        try {
+          showResult(resultDiv, "Sending request...", "info");
 
-            try {
-                showResult(resultDiv, 'Verifying code...', 'info');
-                
-                const response = await fetch('/api/auth/verify-reset-code', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ email: email, code: code }),
-                });
+          const response = await fetch("/api/auth/forgot-password", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ email: email }),
+          });
 
-                const data = await response.json();
-                
-                if (response.ok) {
-                    document.getElementById('resetToken').value = data.verificationToken;
-                    showResult(resultDiv, `✅ Success: ${data.message}\\n\\n🎟️ Verification Token: ${data.verificationToken}\\n\\n(Token automatically filled in Step 3)`, 'success');
-                } else {
-                    showResult(resultDiv, `❌ Error: ${data.error}`, 'error');
-                }
-            } catch (error) {
-                showResult(resultDiv, `❌ Network Error: ${error.message}`, 'error');
-            }
+          const data = await response.json();
+
+          if (response.ok) {
+            showResult(
+              resultDiv,
+              `✅ Success: ${data.message}\\n\\n📧 CHECK BROWSER CONSOLE for simulated email content with 6-digit code!`,
+              "success"
+            );
+          } else {
+            showResult(resultDiv, `❌ Error: ${data.error}`, "error");
+          }
+        } catch (error) {
+          showResult(resultDiv, `❌ Network Error: ${error.message}`, "error");
+        }
+      }
+
+      async function testVerifyCode() {
+        const email = document.getElementById("verifyEmail").value;
+        const code = document.getElementById("verifyCode").value;
+        const resultDiv = document.getElementById("verifyResult");
+
+        if (!email || !code) {
+          showResult(resultDiv, "Please enter email and code", "error");
+          return;
         }
 
-        async function testResetPassword() {
-            const email = document.getElementById('resetEmail').value;
-            const verificationToken = document.getElementById('resetToken').value;
-            const newPassword = document.getElementById('newPassword').value;
-            const resultDiv = document.getElementById('resetResult');
-            
-            if (!email || !verificationToken || !newPassword) {
-                showResult(resultDiv, 'Please fill all fields', 'error');
-                return;
-            }
+        try {
+          showResult(resultDiv, "Verifying code...", "info");
 
-            try {
-                showResult(resultDiv, 'Resetting password...', 'info');
-                
-                const response = await fetch('/api/auth/reset-password', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ 
-                        email: email, 
-                        verificationToken: verificationToken, 
-                        newPassword: newPassword 
-                    }),
-                });
+          const response = await fetch("/api/auth/verify-reset-code", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ email: email, code: code }),
+          });
 
-                const data = await response.json();
-                
-                if (response.ok) {
-                    showResult(resultDiv, `✅ Success: ${data.message}\\n\\n🔐 Password has been reset successfully!\\n\\n📝 You can now sign in with the new password: "${newPassword}"`, 'success');
-                } else {
-                    showResult(resultDiv, `❌ Error: ${data.error}`, 'error');
-                }
-            } catch (error) {
-                showResult(resultDiv, `❌ Network Error: ${error.message}`, 'error');
-            }
+          const data = await response.json();
+
+          if (response.ok) {
+            document.getElementById("resetToken").value =
+              data.verificationToken;
+            showResult(
+              resultDiv,
+              `✅ Success: ${data.message}\\n\\n🎟️ Verification Token: ${data.verificationToken}\\n\\n(Token automatically filled in Step 3)`,
+              "success"
+            );
+          } else {
+            showResult(resultDiv, `❌ Error: ${data.error}`, "error");
+          }
+        } catch (error) {
+          showResult(resultDiv, `❌ Network Error: ${error.message}`, "error");
+        }
+      }
+
+      async function testResetPassword() {
+        const email = document.getElementById("resetEmail").value;
+        const verificationToken = document.getElementById("resetToken").value;
+        const newPassword = document.getElementById("newPassword").value;
+        const resultDiv = document.getElementById("resetResult");
+
+        if (!email || !verificationToken || !newPassword) {
+          showResult(resultDiv, "Please fill all fields", "error");
+          return;
         }
 
-        function showResult(div, message, type) {
-            div.style.display = 'block';
-            div.className = `log ${type}`;
-            div.innerHTML = message.replace(/\\n/g, '<br>');
-        }
+        try {
+          showResult(resultDiv, "Resetting password...", "info");
 
-        // Console instructions
-        console.log('🐐 GOAT Mastermind - Email Test Console');
-        console.log('=====================================');
-        console.log('📧 Simulated emails will appear in this console');
-        console.log('📱 Look for messages starting with [SIMULATED]');
-        console.log('💡 When you see a 6-digit code, copy it for testing');
+          const response = await fetch("/api/auth/reset-password", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              email: email,
+              verificationToken: verificationToken,
+              newPassword: newPassword,
+            }),
+          });
+
+          const data = await response.json();
+
+          if (response.ok) {
+            showResult(
+              resultDiv,
+              `✅ Success: ${data.message}\\n\\n🔐 Password has been reset successfully!\\n\\n📝 You can now sign in with the new password: "${newPassword}"`,
+              "success"
+            );
+          } else {
+            showResult(resultDiv, `❌ Error: ${data.error}`, "error");
+          }
+        } catch (error) {
+          showResult(resultDiv, `❌ Network Error: ${error.message}`, "error");
+        }
+      }
+
+      function showResult(div, message, type) {
+        div.style.display = "block";
+        div.className = `log ${type}`;
+        div.innerHTML = message.replace(/\\n/g, "<br>");
+      }
+
+      // Console instructions
+      console.log("🐐 GOAT Mastermind - Email Test Console");
+      console.log("=====================================");
+      console.log("📧 Simulated emails will appear in this console");
+      console.log("📱 Look for messages starting with [SIMULATED]");
+      console.log("💡 When you see a 6-digit code, copy it for testing");
     </script>
-</body>
+  </body>
 </html>
