@@ -49,7 +49,7 @@ export interface UpdateChatResponse {
 const API_BASE_URL = "/api/scripting";
 
 export class ChatAPI {
-  private static readonly TIMEOUT_MS = 15000; // Reduced to 15 seconds for faster feedback
+  private static readonly TIMEOUT_MS = 60000; // 1 minute timeout
 
   private static async fetchWithTimeout(url: string, options: RequestInit): Promise<Response> {
     const controller = new AbortController();

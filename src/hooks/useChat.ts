@@ -18,6 +18,7 @@ interface UseChatReturn {
   isLoading: boolean;
   error: string | null;
   apiConnected: boolean;
+  showActionButtons: boolean;
 
   // Actions
   createNewChat: () => string;
@@ -27,6 +28,7 @@ interface UseChatReturn {
   updateChatTitle: (chatId: string, title: string) => void;
   clearError: () => void;
   refreshChats: () => Promise<void>;
+  hideActionButtons: () => void;
 }
 
 const generateChatId = () =>
@@ -55,6 +57,7 @@ export function useChat(): UseChatReturn {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [apiConnected, setApiConnected] = useState(false);
+  const [showActionButtons, setShowActionButtons] = useState(false);
 
   const userId = session?.user?.id;
 
@@ -123,6 +126,7 @@ export function useChat(): UseChatReturn {
 
     setChats((prev) => [newChat, ...prev]);
     setCurrentChatId(chatId);
+    setShowActionButtons(false); // Reset action buttons for new chat
     return chatId;
   }, []);
 
@@ -130,9 +134,22 @@ export function useChat(): UseChatReturn {
     (chatId: string) => {
       setCurrentChatId(chatId);
 
+      // Check if selected chat has a "hi" conversation and show action buttons
+      const selectedChat = chats.find((c) => c.id === chatId);
+      if (selectedChat && selectedChat.messages.length >= 2) {
+        const firstUserMessage = selectedChat.messages.find(m => m.role === "user");
+        const hasAssistantResponse = selectedChat.messages.some(m => m.role === "assistant");
+        if (firstUserMessage?.content.toLowerCase().trim() === "hi" && hasAssistantResponse) {
+          setShowActionButtons(true);
+        } else {
+          setShowActionButtons(false);
+        }
+      } else {
+        setShowActionButtons(false);
+      }
+
       // If selecting a chat that exists in backend (has a proper UUID format),
       // we might want to refresh it to ensure we have the latest data
-      const selectedChat = chats.find((c) => c.id === chatId);
       if (selectedChat && chatId.includes("-") && chatId.length > 20) {
         // This looks like a backend UUID, consider refreshing
         // For now, we'll trust our local state unless there are sync issues
@@ -148,16 +165,46 @@ export function useChat(): UseChatReturn {
         return;
       }
 
+      // Hide action buttons after any message is sent (except for initial "hi")
+      const isHiMessage = message.toLowerCase().trim() === "hi";
+      const isFirstMessage = !currentChatId || (chats.find(c => c.id === currentChatId)?.messages.length || 0) === 0;
+      
+      if (showActionButtons && !isHiMessage) {
+        setShowActionButtons(false);
+      }
+
       let chatId = currentChatId;
+      let chat: Chat | undefined;
 
       // Create new chat if none selected
       if (!chatId) {
         chatId = createNewChat();
+        // Since we just created the chat, we can construct it directly
+        chat = {
+          id: chatId,
+          title: "New Chat",
+          messages: [],
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        };
+      } else {
+        chat = chats.find((c) => c.id === chatId);
+        // If chat still not found, it might be a timing issue, so create a new one
+        if (!chat) {
+          console.warn("Chat not found, creating new chat");
+          chatId = createNewChat();
+          chat = {
+            id: chatId,
+            title: "New Chat", 
+            messages: [],
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          };
+        }
       }
 
-      const chat = chats.find((c) => c.id === chatId);
       if (!chat) {
-        setError("Chat not found");
+        setError("Failed to create or find chat");
         return;
       }
 
@@ -197,6 +244,12 @@ export function useChat(): UseChatReturn {
         };
 
         const finalMessages = [...updatedMessages, assistantMessage];
+
+        // Check if this was a "hi" message and we got a response
+        const isHiMessage = message.toLowerCase().trim() === "hi";
+        if (isHiMessage && response.response && !showActionButtons) {
+          setShowActionButtons(true);
+        }
 
         // Determine if this is a new chat (no previous messages)
         const isNewChat = chat.messages.length === 0;
@@ -299,7 +352,7 @@ export function useChat(): UseChatReturn {
         setIsLoading(false);
       }
     },
-    [userId, currentChatId, chats, createNewChat]
+    [userId, currentChatId, chats, createNewChat, showActionButtons]
   );
 
   const deleteChat = useCallback(
@@ -346,6 +399,10 @@ export function useChat(): UseChatReturn {
     await loadUserChats();
   }, [loadUserChats]);
 
+  const hideActionButtons = useCallback(() => {
+    setShowActionButtons(false);
+  }, []);
+
   const currentChat = chats.find((chat) => chat.id === currentChatId) || null;
 
   return {
@@ -354,6 +411,7 @@ export function useChat(): UseChatReturn {
     isLoading,
     error,
     apiConnected,
+    showActionButtons,
     createNewChat,
     selectChat,
     sendMessage,
@@ -361,5 +419,6 @@ export function useChat(): UseChatReturn {
     updateChatTitle,
     clearError,
     refreshChats,
+    hideActionButtons,
   };
 }

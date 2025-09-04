@@ -13,6 +13,8 @@ import {
   Trash2,
   AlertCircle,
   Loader2,
+  FileText,
+  Sparkles,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -39,12 +41,14 @@ export default function ScriptingAgentPage() {
     isLoading,
     error,
     apiConnected,
+    showActionButtons,
     createNewChat,
     selectChat,
     sendMessage,
     deleteChat,
     clearError,
     refreshChats,
+    hideActionButtons,
   } = useChat();
 
   const scrollToBottom = () => {
@@ -197,10 +201,10 @@ export default function ScriptingAgentPage() {
                   <MessageSquare className="h-4 w-4 flex-shrink-0" />
                   <div className="flex-1 min-w-0">
                     <span className="truncate block">{chat.title}</span>
-                    {chat.isLoading && (
-                      <Loader2 className="h-3 w-3 animate-spin mt-1" />
-                    )}
                   </div>
+                  {chat.isLoading && (
+                    <Loader2 className="h-4 w-4 animate-spin text-muted-foreground mr-2" />
+                  )}
                   <Button
                     onClick={(e) => handleDeleteChat(e, chat.id)}
                     size="sm"
@@ -339,6 +343,34 @@ export default function ScriptingAgentPage() {
         {/* Input Area */}
         <div className="bg-gradient-to-t from-background/95 to-background/60 backdrop-blur-sm p-4 border-t border-border/50">
           <div className="max-w-3xl mx-auto">
+            {/* Action Buttons */}
+            {showActionButtons && (
+              <div className="mb-4 flex flex-col sm:flex-row gap-3 justify-center animate-in slide-in-from-bottom-2 duration-300">
+                <Button
+                  onClick={() => {
+                    // Handle "Create from Scratch" action
+                    setInput("Create from Scratch");
+                  }}
+                  variant="outline"
+                  className="flex items-center justify-center gap-2 px-6 py-3 rounded-full border-2 hover:bg-primary hover:border-primary transition-all duration-200 shadow-sm hover:shadow-md min-w-fit"
+                >
+                  <Sparkles className="h-4 w-4" />
+                  <span className="font-medium">Create from Scratch</span>
+                </Button>
+                <Button
+                  onClick={() => {
+                    // Handle "Create from Existing" action
+                    setInput("Create from Existing");
+                  }}
+                  variant="outline"
+                  className="flex items-center justify-center gap-2 px-6 py-3 rounded-full border-2 hover:bg-primary hover:border-primary transition-all duration-200 shadow-sm hover:shadow-md min-w-fit"
+                >
+                  <FileText className="h-4 w-4" />
+                  <span className="font-medium">Create from Existing</span>
+                </Button>
+              </div>
+            )}
+
             <ModernChatInput
               value={input}
               onChange={setInput}

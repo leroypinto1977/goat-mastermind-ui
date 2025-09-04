@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 const EXTERNAL_API_URL = process.env.NEXT_PUBLIC_SCRIPTING_API_URL || "http://15.206.158.83:8000";
-const TIMEOUT_MS = 15000; // Reduced to 15 seconds
+const TIMEOUT_MS = 60000; // 1 minute timeout
 
 export async function POST(request: NextRequest) {
   try {
