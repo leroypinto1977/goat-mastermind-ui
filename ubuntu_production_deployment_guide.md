@@ -1194,11 +1194,26 @@ This setup provides a production-ready deployment with:
 
 ### API Architecture
 
-The Scripting Agent uses an external FastAPI backend for AI chat functionality:
+The Scripting Agent uses an external FastAPI backend for AI chat functionality with a proxy setup:
 
 - **Frontend**: `mastermind.thegoatmedia.co` (Next.js)
-- **API Endpoints**: `http://161.35.235.176:8000` (External FastAPI service)
+- **Internal API Proxy**: `/api/scripting/*` (Next.js API routes)
+- **External API Backend**: `http://15.206.158.83:8000` (FastAPI service)
 - **Integration**: Located in `src/lib/chat-api.ts`
+
+This proxy setup solves CORS issues and provides better error handling.
+
+### API Proxy Routes
+
+The application includes internal API routes that proxy to the external service:
+
+```
+GET  /api/scripting/health              -> http://15.206.158.83:8000/health
+POST /api/scripting/chat                -> http://15.206.158.83:8000/chat
+POST /api/scripting/chat-history/store  -> http://15.206.158.83:8000/chat-history/store
+POST /api/scripting/chat-history/fetch  -> http://15.206.158.83:8000/chat-history/fetch
+POST /api/scripting/chat-history/update -> http://15.206.158.83:8000/chat-history/update
+```
 
 ### API Endpoints
 
@@ -1287,14 +1302,38 @@ const checkApiConnection = async () => {
 - **Backend Sync**: All chats are synchronized with the external API
 - **User-Specific**: Chats are tied to the authenticated user's ID from NextAuth
 
-### Error Handling
+### CORS and Timeout Handling
 
-The integration includes comprehensive error handling:
+The system includes several fixes for common API issues:
 
-- API connection failures
-- Request timeouts
-- Chat synchronization errors
-- Graceful fallbacks to local state
+1. **CORS Issues**: Resolved using Next.js API proxy routes
+2. **Timeout Handling**: 30-second timeout with proper error messages
+3. **Network Error Handling**: User-friendly error messages for connection issues
+4. **Retry Logic**: Users get clear messages to try again
+
+### Troubleshooting API Issues
+
+If you encounter the error "I'm having trouble processing your request. Could you please try again?":
+
+1. **Check API Connection**:
+   ```bash
+   curl http://15.206.158.83:8000/health
+   ```
+
+2. **Check Environment Variable**:
+   ```bash
+   echo $NEXT_PUBLIC_SCRIPTING_API_URL
+   ```
+
+3. **Check Logs**:
+   ```bash
+   pm2 logs nextjs-frontend
+   ```
+
+4. **Test Proxy Endpoint**:
+   ```bash
+   curl http://localhost:3000/api/scripting/health
+   ```
 
 Your applications should now be accessible at:
 

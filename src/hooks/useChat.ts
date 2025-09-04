@@ -280,9 +280,21 @@ export function useChat(): UseChatReturn {
           )
         );
 
-        setError(
-          error instanceof Error ? error.message : "Failed to send message"
-        );
+        // Handle the specific error message you mentioned
+        let errorMessage = "Failed to send message";
+        if (error instanceof Error) {
+          if (error.message.includes("I'm having trouble processing your request")) {
+            errorMessage = "I'm having trouble processing your request. Could you please try again?";
+          } else if (error.message.includes("timeout")) {
+            errorMessage = "The request is taking too long. Please try again.";
+          } else if (error.message.includes("Failed to fetch") || error.message.includes("NetworkError")) {
+            errorMessage = "Network connection issue. Please check your internet connection and try again.";
+          } else {
+            errorMessage = error.message;
+          }
+        }
+
+        setError(errorMessage);
       } finally {
         setIsLoading(false);
       }
