@@ -86,25 +86,12 @@ export class DeviceTracker {
       );
       console.log("📋 Parsed device info:", parsedInfo);
 
-      // First, enforce single session rule - deactivate all existing devices for this user
-      // This will enforce the "only one active session" rule
-      const deactivatedDevices = await prisma.device.updateMany({
-        where: {
-          userId: userId,
-          isActive: true,
-        },
-        data: {
-          isActive: false,
-          lastActive: new Date(),
-        },
-      });
-
-      console.log(
-        `🔒 Deactivated ${deactivatedDevices.count} existing devices for user ${userId}`
-      );
+      // Note: Removed aggressive session enforcement
+      // Now allowing multiple active sessions per user
+      console.log("📱 Device tracking: Allowing multiple sessions for user:", userId);
 
       // Create or update the current device using session-specific fingerprint
-      // This ensures each browser instance gets its own record but only one can be active
+      // Multiple devices can now be active simultaneously
       const device = await prisma.device.upsert({
         where: { fingerprint: sessionFingerprint },
         update: {
@@ -125,7 +112,7 @@ export class DeviceTracker {
 
       console.log("✅ Device tracked successfully:", device.id);
 
-      // Log the device login with information about terminated sessions
+      // Log the device login - no sessions terminated due to new multi-session approach
       await prisma.auditLog.create({
         data: {
           userId,
@@ -134,9 +121,10 @@ export class DeviceTracker {
             deviceId: device.id,
             deviceInfo: parsedInfo,
             ipAddress: deviceInfo.ipAddress,
-            previousSessionsTerminated: deactivatedDevices.count > 0,
-            terminatedCount: deactivatedDevices.count,
+            previousSessionsTerminated: false,
+            terminatedCount: 0,
             fingerprint: sessionFingerprint.substring(0, 10) + "...",
+            allowsMultipleSessions: true,
           },
           ipAddress: deviceInfo.ipAddress,
           userAgent: deviceInfo.userAgent,
@@ -144,7 +132,7 @@ export class DeviceTracker {
       });
 
       console.log(
-        `🎯 Device tracking completed. Active device: ${device.id}, Terminated: ${deactivatedDevices.count}`
+        `🎯 Device tracking completed. Active device: ${device.id}, Multiple sessions allowed`
       );
       return device.id;
     } catch (error) {

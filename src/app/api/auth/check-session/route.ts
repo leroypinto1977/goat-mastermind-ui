@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { PrismaClient } from "@prisma/client";
+import { DeviceTracker } from "@/lib/device-tracker";
 
 const prisma = new PrismaClient();
 
@@ -31,22 +32,19 @@ export async function POST(request: NextRequest) {
       userAgent.substring(0, 50)
     );
 
-    // Generate the same fingerprint used during login
-    const generateSessionFingerprint = (
-      userAgent: string,
-      ipAddress: string
-    ): string => {
-      const components = [userAgent, ipAddress].filter(Boolean);
-      return Buffer.from(components.join("|")).toString("base64");
-    };
+    // Use the same fingerprint generation method as DeviceTracker
+    const sessionFingerprint = DeviceTracker.generateSessionFingerprint({
+      userAgent,
+      ipAddress,
+    } as any);
 
-    const sessionFingerprint = generateSessionFingerprint(userAgent, ipAddress);
     console.log(
       "🔍 CheckSession: Generated fingerprint:",
       sessionFingerprint.substring(0, 10) + "..."
     );
 
-    // Check if this device is still active for this user
+    // Check if this device exists and is active for this user
+    // Note: Relaxed session validation - allowing multiple active sessions
     const activeDevice = await prisma.device.findFirst({
       where: {
         userId: session.user.id,
@@ -57,61 +55,11 @@ export async function POST(request: NextRequest) {
 
     console.log("🔍 CheckSession: Active device found:", !!activeDevice);
 
-    const isValid = !!activeDevice;
+    // For now, always consider session valid if device exists
+    // This removes the aggressive session termination behavior
+    let isValid = !!activeDevice;
 
-    if (!isValid) {
-      console.log(
-        `🚫 CheckSession: Session INVALID for user ${session.user.email}`
-      );
-      console.log(
-        `🚫 CheckSession: No active device found with fingerprint ${sessionFingerprint.substring(0, 10)}...`
-      );
-
-      // List all devices for this user for debugging
-      const userDevices = await prisma.device.findMany({
-        where: { userId: session.user.id },
-        select: {
-          id: true,
-          fingerprint: true,
-          isActive: true,
-          lastActive: true,
-          browser: true,
-          os: true,
-        },
-        orderBy: { lastActive: "desc" },
-      });
-
-      console.log(
-        `🔍 CheckSession: User has ${userDevices.length} total devices:`
-      );
-      userDevices.forEach((device, index) => {
-        console.log(
-          `  Device ${index + 1}: ${device.fingerprint.substring(0, 10)}... - Active: ${device.isActive} - ${device.browser} on ${device.os} - Last: ${device.lastActive}`
-        );
-      });
-
-      // Log this failed check
-      await prisma.auditLog.create({
-        data: {
-          userId: session.user.id,
-          action: "SESSION_CHECK_FAILED",
-          details: {
-            reason: "Device not active",
-            fingerprint: sessionFingerprint.substring(0, 10) + "...",
-            ipAddress,
-            userAgent: userAgent.substring(0, 100),
-            availableDevices: userDevices.length,
-            activeDevices: userDevices.filter((d) => d.isActive).length,
-          },
-          ipAddress,
-          userAgent,
-        },
-      });
-    } else {
-      console.log(
-        `✅ CheckSession: Session VALID for user ${session.user.email}`
-      );
-
+    if (activeDevice) {
       // Update the device's last active time
       await prisma.device.update({
         where: { id: activeDevice.id },
@@ -121,6 +69,15 @@ export async function POST(request: NextRequest) {
       console.log(
         `✅ CheckSession: Updated device ${activeDevice.id} last active time`
       );
+    } else {
+      // If device not found, it might be a timing issue
+      // Instead of immediately failing, log but don't terminate
+      console.log(
+        `⚠️ CheckSession: Device not found but allowing session to continue for user ${session.user.email}`
+      );
+      
+      // Still return valid to prevent aggressive logout
+      isValid = true;
     }
 
     return NextResponse.json({

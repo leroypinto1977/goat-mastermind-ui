@@ -45,7 +45,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// Force terminate other sessions
+// Force terminate other sessions - DISABLED
 export async function POST(request: NextRequest) {
   try {
     const session = await auth();
@@ -54,21 +54,17 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const terminatedCount = await DeviceTracker.enforceSessionLimit(
-      session.user.id,
-      1
-    );
+    // Session enforcement disabled - allowing multiple sessions
+    console.log("📝 Session termination disabled - multiple sessions allowed");
 
     return NextResponse.json({
       success: true,
-      terminatedSessions: terminatedCount,
-      message:
-        terminatedCount > 0
-          ? `${terminatedCount} previous session(s) terminated due to session limit`
-          : "No sessions needed termination",
+      terminatedSessions: 0,
+      message: "Session enforcement is currently disabled - multiple sessions are allowed",
+      multipleSessionsAllowed: true,
     });
   } catch (error) {
-    console.error("Error enforcing session limit:", error);
+    console.error("Error in session check:", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }

@@ -4,9 +4,7 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { SessionProvider } from "next-auth/react";
 import { Toaster } from "sonner";
-import { SessionLimitNotification } from "@/components/session-limit-notification";
 import { DeviceTracker } from "@/components/device-tracker";
-import { SessionMonitor } from "@/components/session-monitor";
 import { SessionEnforcer } from "@/components/session-enforcer";
 
 const geistSans = Geist({
@@ -54,10 +52,8 @@ export default function RootLayout({
             disableTransitionOnChange
           >
             <DeviceTracker />
-            <SessionMonitor />
             <SessionEnforcer />
             {children}
-            <SessionLimitNotification />
             <Toaster position="top-right" richColors closeButton />
           </ThemeProvider>
         </SessionProvider>

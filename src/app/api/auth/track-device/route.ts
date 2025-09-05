@@ -35,8 +35,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       deviceId,
-      message: "Device tracked successfully",
-      sessionEnforced: true,
+      message: "Device tracked successfully - multiple sessions allowed",
+      sessionEnforced: false,
+      allowsMultipleSessions: true,
     });
   } catch (error) {
     console.error("❌ Error tracking device:", error);

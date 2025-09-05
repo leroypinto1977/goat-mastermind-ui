@@ -18,7 +18,12 @@ export function useDeviceTracking() {
 
   useEffect(() => {
     if (status === "authenticated" && session?.user?.id) {
-      trackDevice();
+      // Small delay to ensure session is fully established
+      const timer = setTimeout(() => {
+        trackDevice();
+      }, 500);
+      
+      return () => clearTimeout(timer);
     }
   }, [session, status]);
 
@@ -39,14 +44,10 @@ export function useDeviceTracking() {
         console.log("✅ Device tracking successful:", result);
         setTrackingResult({
           deviceTracked: true,
-          sessionEnforced: result.sessionEnforced,
+          sessionEnforced: false, // No longer enforcing single session
         });
 
-        // Show session enforcement notification if needed
-        if (result.sessionEnforced) {
-          // This will be handled by the SessionLimitNotification component
-          localStorage.removeItem("sessionLimitNotificationShown");
-        }
+        console.log("📱 Multiple sessions are now allowed for this user");
       } else {
         console.error("❌ Device tracking failed:", result);
         setTrackingResult({
