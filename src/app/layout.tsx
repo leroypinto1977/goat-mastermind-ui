@@ -6,6 +6,7 @@ import { SessionProvider } from "next-auth/react";
 import { Toaster } from "sonner";
 import { DeviceTracker } from "@/components/device-tracker";
 import { SessionEnforcer } from "@/components/session-enforcer";
+import { TempPasswordChecker } from "@/components/temp-password-checker";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -53,6 +54,7 @@ export default function RootLayout({
           >
             <DeviceTracker />
             <SessionEnforcer />
+            <TempPasswordChecker />
             {children}
             <Toaster position="top-right" richColors closeButton />
           </ThemeProvider>

@@ -7,6 +7,7 @@ declare module "next-auth" {
     email: string;
     name?: string | null;
     role: "USER" | "ADMIN";
+    isFirstLogin?: boolean;
     requiresPasswordReset?: boolean;
   }
 
@@ -16,6 +17,7 @@ declare module "next-auth" {
       email: string;
       name?: string | null;
       role: "USER" | "ADMIN";
+      isFirstLogin?: boolean;
       requiresPasswordReset?: boolean;
     };
   }
@@ -24,6 +26,7 @@ declare module "next-auth" {
 declare module "next-auth/jwt" {
   interface JWT {
     role: "USER" | "ADMIN";
+    isFirstLogin?: boolean;
     requiresPasswordReset?: boolean;
   }
 }

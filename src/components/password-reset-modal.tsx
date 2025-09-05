@@ -1,9 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { signOut } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { toast } from "sonner";
 import {
   Card,
   CardContent,
@@ -24,6 +25,7 @@ export function PasswordResetModal({
   onClose,
   userEmail,
 }: PasswordResetModalProps) {
+  const { data: session } = useSession();
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -55,26 +57,29 @@ export function PasswordResetModal({
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          currentPassword: currentPassword,
-          newPassword: newPassword,
+          currentPassword,
+          newPassword,
         }),
       });
 
       const data = await response.json();
 
-      if (!response.ok) {
+      if (response.ok) {
+        toast.success("Password changed successfully!");
+        // Set user-specific flag in localStorage to indicate password was changed
+        if (session?.user?.id) {
+          const userPasswordKey = `passwordChanged_${session.user.id}`;
+          localStorage.setItem(userPasswordKey, "true");
+          console.log("✅ Password changed successfully for user:", session.user.email);
+        }
+        onClose();
+        // Force a session update to reflect the password change
+        window.location.reload();
+      } else {
         setError(data.error || "Failed to change password");
-        return;
       }
-
-      // Force immediate logout to clear the session state
-      await signOut({
-        callbackUrl:
-          "/auth/signin?message=Password changed successfully. Please sign in with your new password.",
-        redirect: true,
-      });
     } catch (error) {
-      setError("An error occurred. Please try again.");
+      setError("Failed to change password. Please try again.");
     } finally {
       setLoading(false);
     }

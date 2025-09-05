@@ -40,12 +40,10 @@ export async function GET(
     }
 
     // For security, only return temp password info if user hasn't logged in
-    // and only for recently created users (within last 24 hours)
     let tempPasswordMessage: string | null = null;
     if (user.isFirstLogin) {
-      // Show a message indicating that a temporary password was provided
       tempPasswordMessage =
-        "Temporary password was provided during user creation";
+        "User still using temporary password - has not changed it yet";
     }
 
     return NextResponse.json({

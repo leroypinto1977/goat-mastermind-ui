@@ -111,10 +111,8 @@ export class AuthService {
         return { success: false, error: "Invalid credentials" };
       }
 
-      // Check if user needs to change password (check if it's a recently created user with no login history)
-      const requiresPasswordReset =
-        !user.lastLoginAt &&
-        new Date(user.createdAt).getTime() > Date.now() - 24 * 60 * 60 * 1000; // Created within last 24 hours
+      // Check if user needs to change password based on isFirstLogin
+      const requiresPasswordReset = user.isFirstLogin;
 
       // SINGLE SESSION ENFORCEMENT: Terminate all existing sessions
       await this.terminateAllUserSessions(user.id);
