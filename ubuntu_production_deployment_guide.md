@@ -1228,7 +1228,7 @@ POST /chat
 Body: { message: string, chat_history: ChatMessage[] }
 
 // Store new chat
-POST /chat-history/store  
+POST /chat-history/store
 Body: { user_id: string, chat_history: ChatMessage[] }
 
 // Fetch user's chats
@@ -1259,7 +1259,8 @@ NEXT_PUBLIC_SCRIPTING_API_URL="http://15.206.158.83:8000"
 This is referenced in `src/lib/chat-api.ts`:
 
 ```typescript
-const API_BASE_URL = process.env.NEXT_PUBLIC_SCRIPTING_API_URL || "http://15.206.158.83:8000";
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_SCRIPTING_API_URL || "http://15.206.158.83:8000";
 ```
 
 ### To Update API URL
@@ -1316,16 +1317,19 @@ The system includes several fixes for common API issues:
 If you encounter the error "I'm having trouble processing your request. Could you please try again?":
 
 1. **Check API Connection**:
+
    ```bash
    curl http://15.206.158.83:8000/health
    ```
 
 2. **Check Environment Variable**:
+
    ```bash
    echo $NEXT_PUBLIC_SCRIPTING_API_URL
    ```
 
 3. **Check Logs**:
+
    ```bash
    pm2 logs nextjs-frontend
    ```

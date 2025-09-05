@@ -137,9 +137,16 @@ export function useChat(): UseChatReturn {
       // Check if selected chat has a "hi" conversation and show action buttons
       const selectedChat = chats.find((c) => c.id === chatId);
       if (selectedChat && selectedChat.messages.length >= 2) {
-        const firstUserMessage = selectedChat.messages.find(m => m.role === "user");
-        const hasAssistantResponse = selectedChat.messages.some(m => m.role === "assistant");
-        if (firstUserMessage?.content.toLowerCase().trim() === "hi" && hasAssistantResponse) {
+        const firstUserMessage = selectedChat.messages.find(
+          (m) => m.role === "user"
+        );
+        const hasAssistantResponse = selectedChat.messages.some(
+          (m) => m.role === "assistant"
+        );
+        if (
+          firstUserMessage?.content.toLowerCase().trim() === "hi" &&
+          hasAssistantResponse
+        ) {
           setShowActionButtons(true);
         } else {
           setShowActionButtons(false);
@@ -167,8 +174,10 @@ export function useChat(): UseChatReturn {
 
       // Hide action buttons after any message is sent (except for initial "hi")
       const isHiMessage = message.toLowerCase().trim() === "hi";
-      const isFirstMessage = !currentChatId || (chats.find(c => c.id === currentChatId)?.messages.length || 0) === 0;
-      
+      const isFirstMessage =
+        !currentChatId ||
+        (chats.find((c) => c.id === currentChatId)?.messages.length || 0) === 0;
+
       if (showActionButtons && !isHiMessage) {
         setShowActionButtons(false);
       }
@@ -195,7 +204,7 @@ export function useChat(): UseChatReturn {
           chatId = createNewChat();
           chat = {
             id: chatId,
-            title: "New Chat", 
+            title: "New Chat",
             messages: [],
             createdAt: new Date(),
             updatedAt: new Date(),
@@ -336,12 +345,19 @@ export function useChat(): UseChatReturn {
         // Handle the specific error message you mentioned
         let errorMessage = "Failed to send message";
         if (error instanceof Error) {
-          if (error.message.includes("I'm having trouble processing your request")) {
-            errorMessage = "I'm having trouble processing your request. Could you please try again?";
+          if (
+            error.message.includes("I'm having trouble processing your request")
+          ) {
+            errorMessage =
+              "I'm having trouble processing your request. Could you please try again?";
           } else if (error.message.includes("timeout")) {
             errorMessage = "The request is taking too long. Please try again.";
-          } else if (error.message.includes("Failed to fetch") || error.message.includes("NetworkError")) {
-            errorMessage = "Network connection issue. Please check your internet connection and try again.";
+          } else if (
+            error.message.includes("Failed to fetch") ||
+            error.message.includes("NetworkError")
+          ) {
+            errorMessage =
+              "Network connection issue. Please check your internet connection and try again.";
           } else {
             errorMessage = error.message;
           }

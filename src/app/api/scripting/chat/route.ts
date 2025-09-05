@@ -1,6 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from "next/server";
 
-const EXTERNAL_API_URL = process.env.NEXT_PUBLIC_SCRIPTING_API_URL || "http://15.206.158.83:8000";
+const EXTERNAL_API_URL =
+  process.env.NEXT_PUBLIC_SCRIPTING_API_URL || "http://15.206.158.83:8000";
 const TIMEOUT_MS = 60000; // 1 minute timeout
 
 export async function POST(request: NextRequest) {
@@ -14,10 +15,10 @@ export async function POST(request: NextRequest) {
     }, TIMEOUT_MS);
 
     const response = await fetch(`${EXTERNAL_API_URL}/chat`, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
+        "Content-Type": "application/json",
+        Accept: "application/json",
       },
       body: JSON.stringify(body),
       signal: controller.signal,
@@ -27,7 +28,7 @@ export async function POST(request: NextRequest) {
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('External API Error:', response.status, errorText);
+      console.error("External API Error:", response.status, errorText);
       return NextResponse.json(
         { error: `External API Error: ${response.status}` },
         { status: response.status }
@@ -37,18 +38,24 @@ export async function POST(request: NextRequest) {
     const data = await response.json();
     return NextResponse.json(data);
   } catch (error) {
-    console.error('Proxy API Error:', error);
-    
+    console.error("Proxy API Error:", error);
+
     // Check if it's a timeout error
-    if (error instanceof Error && (error.name === 'AbortError' || error.message.includes('aborted'))) {
+    if (
+      error instanceof Error &&
+      (error.name === "AbortError" || error.message.includes("aborted"))
+    ) {
       return NextResponse.json(
-        { error: 'Request timeout - the AI service is taking too long to respond' },
+        {
+          error:
+            "Request timeout - the AI service is taking too long to respond",
+        },
         { status: 408 }
       );
     }
-    
+
     return NextResponse.json(
-      { error: 'Failed to communicate with scripting service' },
+      { error: "Failed to communicate with scripting service" },
       { status: 500 }
     );
   }

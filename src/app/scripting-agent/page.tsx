@@ -79,6 +79,12 @@ export default function ScriptingAgentPage() {
     // These combinations will naturally create new lines, so we don't prevent default
   };
 
+  const handlePlusClick = () => {
+    // Handle plus button functionality - you can customize this based on your needs
+    console.log("Plus button clicked");
+    // For example, you could open a file picker, show options menu, etc.
+  };
+
   const handleNewChat = () => {
     createNewChat();
     setIsSidebarOpen(false); // Close sidebar on mobile
@@ -293,10 +299,10 @@ export default function ScriptingAgentPage() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-3xl">
                 {[
-                  "Write a Python script to automate file organization",
-                  "Create a bash script for system monitoring",
-                  "Help me debug a JavaScript function",
-                  "Generate a PowerShell script for user management",
+                  "Create from scratch",
+                  "Create from existing",
+                  // "Help me debug a JavaScript function",
+                  // "Generate a PowerShell script for user management",
                 ].map((suggestion, i) => (
                   <button
                     key={i}
@@ -376,6 +382,7 @@ export default function ScriptingAgentPage() {
               onChange={setInput}
               onSubmit={handleSendMessage}
               onKeyDown={handleKeyDown}
+              onPlusClick={handlePlusClick}
               placeholder={
                 !session
                   ? "Please sign in to start chatting..."

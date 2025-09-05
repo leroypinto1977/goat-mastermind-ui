@@ -246,15 +246,6 @@ export default function AdminDashboard() {
       }
 
       setLastUpdated(new Date());
-
-      // Show success toast
-      const activeSessionsCount = devices.filter((d: any) => d.isActive).length;
-      toast.success(
-        `Dashboard updated! ${activeSessionsCount} active sessions found.`,
-        {
-          duration: 3000,
-        }
-      );
     } catch (error) {
       console.error("❌ Error loading stats data:", error);
       toast.error("Failed to refresh dashboard data", {

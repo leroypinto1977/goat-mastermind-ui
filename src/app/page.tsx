@@ -56,7 +56,7 @@ export default function Home() {
     {
       title: "Video Agent",
       description: "Create and edit video content using AI",
-      active: true,
+      active: false,
     },
     {
       title: "Background Music",
